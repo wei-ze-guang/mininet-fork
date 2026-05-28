@@ -63,7 +63,11 @@ export type ActionRunnerSnapshot = {
   stepFrameBack: () => void;
   stepFrameForward: () => void;
   stepBack: () => void;
+  stepBackInScope: (scopeId: string) => void;
   stepForward: () => void;
+  stepForwardInScope: (scopeId: string) => void;
+  resetScope: (scopeId: string) => void;
+  getScopeProgress: (scopeId: string) => { current: number; total: number };
   toggle: () => void;
 };
 
@@ -88,6 +92,7 @@ export function useActionRunner({
   pauseMs = 900,
   onEvent,
 }: ActionRunnerOptions): ActionRunnerSnapshot {
+  const rootId = root.id;
   const timeline = useMemo(
     () => buildActionTimeline(root, stepMs, pauseMs, initialData),
     [initialData, pauseMs, root, stepMs],
@@ -125,6 +130,34 @@ export function useActionRunner({
     () => timeline.flatMap((timelineFrame, index) => (timelineFrame.milestoneIndex !== undefined ? [index] : [])),
     [timeline],
   );
+  const scopedFramesById = useMemo(() => {
+    const actionIds = new Set<string>();
+    for (const timelineFrame of timeline) {
+      actionIds.add(timelineFrame.event.actionId);
+      if (timelineFrame.event.parentId) {
+        actionIds.add(timelineFrame.event.parentId);
+      }
+      for (const actionId of timelineFrame.activePath) {
+        actionIds.add(actionId);
+      }
+    }
+
+    return Array.from(actionIds).reduce((result, actionId) => {
+      result.set(
+        actionId,
+        timeline.flatMap((timelineFrame, index) => (isFrameInScope(timelineFrame, actionId, rootId) ? [index] : [])),
+      );
+      return result;
+    }, new Map<string, number[]>());
+  }, [rootId, timeline]);
+  const scopedMilestoneFramesById = useMemo(() => {
+    return new Map(
+      Array.from(scopedFramesById.entries()).map(([actionId, scopeFrames]) => [
+        actionId,
+        scopeFrames.filter((scopeFrame) => timeline[scopeFrame]?.milestoneIndex !== undefined),
+      ]),
+    );
+  }, [scopedFramesById, timeline]);
   const milestoneIndex = frame.milestoneIndex ?? findPreviousMilestoneIndex(frameIndex, milestoneFrames);
   const milestoneCount = milestoneFrames.length;
   const getStatus = useCallback(
@@ -194,6 +227,48 @@ export function useActionRunner({
     }
     setFrameIndex(0);
   }, [frameIndex, milestoneFrames]);
+  const stepForwardInScope = useCallback(
+    (scopeId: string) => {
+      setPlaying(false);
+      const scopedMilestones = scopedMilestoneFramesById.get(scopeId) ?? [];
+      const scopedFrames = scopedFramesById.get(scopeId) ?? [];
+      const nextFrame = scopedMilestones.find((candidate) => candidate > frameIndex) ?? scopedFrames.at(-1);
+      if (nextFrame !== undefined) {
+        setFrameIndex(nextFrame);
+      }
+    },
+    [frameIndex, scopedFramesById, scopedMilestoneFramesById],
+  );
+  const stepBackInScope = useCallback(
+    (scopeId: string) => {
+      setPlaying(false);
+      const scopedMilestones = scopedMilestoneFramesById.get(scopeId) ?? [];
+      const scopedFrames = scopedFramesById.get(scopeId) ?? [];
+      const previousFrame = scopedMilestones.filter((candidate) => candidate < frameIndex).at(-1) ?? scopedFrames[0];
+      if (previousFrame !== undefined) {
+        setFrameIndex(previousFrame);
+      }
+    },
+    [frameIndex, scopedFramesById, scopedMilestoneFramesById],
+  );
+  const resetScope = useCallback(
+    (scopeId: string) => {
+      setPlaying(false);
+      const firstFrame = scopedFramesById.get(scopeId)?.[0];
+      if (firstFrame !== undefined) {
+        setFrameIndex(firstFrame);
+      }
+    },
+    [scopedFramesById],
+  );
+  const getScopeProgress = useCallback(
+    (scopeId: string) => {
+      const scopedMilestones = scopedMilestoneFramesById.get(scopeId) ?? [];
+      const current = scopedMilestones.filter((candidate) => candidate <= frameIndex).length;
+      return { current: Math.max(1, current || 1), total: Math.max(1, scopedMilestones.length) };
+    },
+    [frameIndex, scopedMilestoneFramesById],
+  );
 
   return {
     activeActionId: frame.activeActionId,
@@ -216,12 +291,16 @@ export function useActionRunner({
     play,
     playing,
     reset,
+    resetScope,
     seek,
     seekMilestone,
     stepFrameBack,
     stepFrameForward,
     stepBack,
+    stepBackInScope,
     stepForward,
+    stepForwardInScope,
+    getScopeProgress,
     toggle,
   };
 }
@@ -310,4 +389,12 @@ export function buildActionTimeline(
 function findPreviousMilestoneIndex(frameIndex: number, milestoneFrames: number[]) {
   const previous = milestoneFrames.findLastIndex((candidate) => candidate <= frameIndex);
   return Math.max(previous, 0);
+}
+
+function isFrameInScope(frame: TimelineFrame, scopeId: string, rootId: string) {
+  if (scopeId === rootId) {
+    return true;
+  }
+
+  return frame.activePath.includes(scopeId) || frame.event.actionId === scopeId || frame.event.parentId === scopeId;
 }
