@@ -15,37 +15,41 @@ import {
   Zap,
 } from "lucide-react";
 
+import {
+  createActionPluginRegistry,
+  type ActionNodePlugin,
+  type ActionRenderContext,
+} from "./action-plugin";
 import { type ActionNode as ActionTreeNode, type ActionRunnerSnapshot, type ActionStatus, useActionRunner } from "./action-runner";
 
-const stages = [
+const stageNodes = [
   {
     id: "physical",
-    name: "物理层动作",
-    icon: Zap,
-    tone: "cyan",
-    input: "01011010",
-    output: "bit stream",
-    steps: ["信号到达", "组件居中", "展开内部", "传递给下一步"],
+    label: "物理层动作",
+    role: "component",
+    layer: "physical",
+    kind: "stage-physical",
+    summary: "01011010 -> bit stream",
+    meta: { index: 0, tone: "cyan", icon: "zap", input: "01011010", output: "bit stream" },
   },
   {
     id: "link",
-    name: "链路层动作",
-    icon: Layers,
-    tone: "emerald",
-    input: "bit stream",
-    output: "frame",
-    steps: ["收到输入", "放大剖开", "内部模块工作", "收缩回节点"],
+    label: "链路层动作",
+    role: "component",
+    layer: "link",
+    kind: "stage-link",
+    summary: "bit stream -> frame",
+    meta: { index: 1, tone: "emerald", icon: "layers", input: "bit stream", output: "frame" },
   },
   {
     id: "next",
-    name: "下一层动作",
-    icon: Route,
-    tone: "amber",
-    input: "frame",
-    output: "next object",
-    steps: ["接住输出", "继续居中", "继续展开", "形成套娃"],
+    label: "下一层动作",
+    role: "component",
+    kind: "stage-next",
+    summary: "frame -> next object",
+    meta: { index: 2, tone: "amber", icon: "route", input: "frame", output: "next object" },
   },
-];
+] satisfies ActionTreeNode<DemoData>[];
 
 const nestedSteps = ["收到比特流", "数据链路层", "转发帧"];
 const nestedActionIds = ["incoming-bits", "link-layer", "forward-frame"];
@@ -175,6 +179,26 @@ type LayoutNode = {
   y: number;
 };
 
+const defaultActionPlugin: ActionNodePlugin<DemoData> = {
+  id: "default-action-node",
+  match: () => true,
+  renderExpanded: (ctx) => <DefaultExpandedNode ctx={ctx} />,
+  renderFocused: (ctx) => <DefaultFocusedNode ctx={ctx} />,
+  renderMiniMap: (ctx) => <DefaultMiniMapNode ctx={ctx} />,
+  renderStage: (ctx) => <DefaultStageNode ctx={ctx} />,
+};
+
+const ethernetFramePlugin: ActionNodePlugin<DemoData> = {
+  id: "ethernet-frame",
+  match: (node) => node.kind === "ethernet-frame",
+  renderExpanded: (ctx) => <DefaultExpandedNode ctx={ctx} />,
+  renderFocused: (ctx) => <EthernetFrameFocusedNode ctx={ctx} />,
+  renderMiniMap: (ctx) => <DefaultMiniMapNode ctx={ctx} />,
+  renderStage: (ctx) => <DefaultStageNode ctx={ctx} />,
+};
+
+const actionPluginRegistry = createActionPluginRegistry<DemoData>([ethernetFramePlugin, defaultActionPlugin]);
+
 export function ScopedActionDemo() {
   const runner = useActionRunner({
     root: actionTree,
@@ -206,8 +230,8 @@ export function ScopedActionDemo() {
       <div className="nest-scene">
         <AutoLayoutCanvas root={actionTree} runner={runner} />
         <PipelineRail />
-        {stages.map((stage, index) => (
-          <StageNode key={stage.id} index={index} stage={stage} />
+        {stageNodes.map((node) => (
+          <StageNode key={node.id} node={node} runner={runner} />
         ))}
         <CenterActionMachine runner={runner} />
       </div>
@@ -255,6 +279,33 @@ function PipelineRail() {
   );
 }
 
+function createRenderContext(node: ActionTreeNode<DemoData>, runner: Runner): ActionRenderContext<DemoData> {
+  const data = isDemoData(runner.data) ? runner.data : initialDemoData;
+
+  return {
+    active: runner.activeActionId === node.id,
+    children: node.children ?? [],
+    data,
+    expanded: runner.isExpanded(node.id),
+    input: node.input,
+    node,
+    output: node.output,
+    runner,
+    status: runner.getStatus(node.id),
+  };
+}
+
+function StageIcon({ node }: { node: ActionTreeNode<DemoData> }) {
+  const icon = typeof node.meta?.icon === "string" ? node.meta.icon : "";
+  if (icon === "zap") {
+    return <Zap className="node-icon" />;
+  }
+  if (icon === "route") {
+    return <Route className="node-icon" />;
+  }
+  return <Layers className="node-icon" />;
+}
+
 function AutoLayoutCanvas({ root, runner }: { root: ActionTreeNode; runner: Runner }) {
   const layout = layoutActionTree(root);
   const nodeById = new Map(layout.map((node) => [node.id, node]));
@@ -287,20 +338,23 @@ function AutoLayoutCanvas({ root, runner }: { root: ActionTreeNode; runner: Runn
         })}
       </svg>
       {layout.map((node) => {
-        const status = runner.getStatus(node.id);
         const active = runner.activeActionId === node.id;
         const inPath = runner.activePath.includes(node.id);
         const done = runner.isDone(node.id);
         const actionNode = runner.getNode(node.id);
 
+        if (!actionNode) {
+          return null;
+        }
+
+        const plugin = actionPluginRegistry.resolve(actionNode);
+        const ctx = createRenderContext(actionNode, runner);
+
         return (
-          <div
-            className={`canvas-node depth-${node.depth} role-${actionNode?.role ?? "component"} state-${status} ${active ? "is-active" : ""} ${inPath ? "is-path" : ""} ${done ? "is-done" : ""}`}
-            key={node.id}
-            style={{ left: `${node.x}%`, top: `${node.y}%` }}
-          >
-            <span className="canvas-node-dot" />
-            <span className="canvas-node-label">{node.label}</span>
+          <div key={node.id} style={{ left: `${node.x}%`, top: `${node.y}%` }} className="canvas-node-anchor">
+            {plugin?.renderMiniMap?.({ ...ctx, active: active || ctx.active }) ?? (
+              <DefaultMiniMapNode ctx={{ ...ctx, active: active || ctx.active }} inPath={inPath} done={done} depth={node.depth} />
+            )}
           </div>
         );
       })}
@@ -309,25 +363,16 @@ function AutoLayoutCanvas({ root, runner }: { root: ActionTreeNode; runner: Runn
 }
 
 function StageNode({
-  stage,
-  index,
+  node,
+  runner,
 }: {
-  stage: (typeof stages)[number];
-  index: number;
+  node: ActionTreeNode<DemoData>;
+  runner: Runner;
 }) {
-  const Icon = stage.icon;
+  const ctx = createRenderContext(node, runner);
+  const plugin = actionPluginRegistry.resolve(node);
 
-  return (
-    <div className={`action-node action-node-${index} tone-${stage.tone}`}>
-      <div className="node-shell">
-        <Icon className="node-icon" />
-      </div>
-      <div className="node-name">{stage.name}</div>
-      <div className="node-io">
-        {stage.input} {"->"} {stage.output}
-      </div>
-    </div>
-  );
+  return plugin?.renderStage?.(ctx) ?? <DefaultStageNode ctx={ctx} />;
 }
 
 function CenterActionMachine({ runner }: { runner: Runner }) {
@@ -396,44 +441,156 @@ function FocusNodeInspector({ node, runner }: { node: ActionTreeNode | undefined
     return null;
   }
 
-  const children = node.children ?? [];
-  const interfaces = [node.input, node.output].filter((interfaceNode): interfaceNode is ActionTreeNode => Boolean(interfaceNode));
+  const status = runner.getStatus(node.id);
+  const plugin = actionPluginRegistry.resolve(node);
+  const data = isDemoData(runner.data) ? runner.data : initialDemoData;
+  const ctx = {
+    active: runner.activeActionId === node.id,
+    children: node.children ?? [],
+    data,
+    expanded: runner.isExpanded(node.id),
+    input: node.input,
+    node,
+    output: node.output,
+    runner,
+    status,
+  } satisfies ActionRenderContext<DemoData>;
+
+  return plugin?.renderFocused?.(ctx) ?? null;
+}
+
+function DefaultFocusedNode({ ctx }: { ctx: ActionRenderContext<DemoData> }) {
+  const { children, node, runner } = ctx;
+  const interfaces = [ctx.input, ctx.output].filter((interfaceNode): interfaceNode is ActionTreeNode<DemoData> => Boolean(interfaceNode));
 
   return (
     <div className={`focus-inspector role-${node.role ?? "component"}`}>
-      <div className="focus-inspector-head">
-        <div>
-          <span>{node.role ?? "component"}</span>
-          {node.layer ? <span>{node.layer}</span> : null}
-          {node.kind ? <span>{node.kind}</span> : null}
-        </div>
-        <strong>{node.label}</strong>
-      </div>
+      <FocusNodeHeader node={node} />
       <div className="focus-inspector-summary">{node.summary ?? "当前节点没有专门数据展示器，使用默认节点结构展示。"}</div>
-      {interfaces.length ? (
-        <div className="focus-interfaces">
-          {interfaces.map((interfaceNode) => (
-            <div className={`focus-interface role-${interfaceNode.role ?? "component"}`} key={interfaceNode.id}>
-              <div>
-                <span>{interfaceNode.role ?? "interface"}</span>
-                <strong>{interfaceNode.label}</strong>
-              </div>
-              <small>{interfaceNode.summary ?? interfaceNode.kind ?? "ActionNode interface"}</small>
-            </div>
-          ))}
+      <FocusInterfaces interfaces={interfaces} />
+      <FocusChildren nodes={children} runner={runner} />
+    </div>
+  );
+}
+
+function EthernetFrameFocusedNode({ ctx }: { ctx: ActionRenderContext<DemoData> }) {
+  return (
+    <div className="focus-inspector role-data ethernet-frame-plugin">
+      <FocusNodeHeader node={ctx.node} />
+      <div className="focus-inspector-summary">{ctx.node.summary ?? "以太网帧由 MAC 首部、载荷和 FCS 组成。"}</div>
+      <div className="ethernet-frame-view">
+        {ctx.children.map((field) => (
+          <div className={`ethernet-field state-${ctx.runner.getStatus(field.id)}`} key={field.id}>
+            <span>{field.kind ?? "field"}</span>
+            <strong>{field.label}</strong>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FocusNodeHeader({ node }: { node: ActionTreeNode }) {
+  return (
+    <div className="focus-inspector-head">
+      <div>
+        <span>{node.role ?? "component"}</span>
+        {node.layer ? <span>{node.layer}</span> : null}
+        {node.kind ? <span>{node.kind}</span> : null}
+      </div>
+      <strong>{node.label}</strong>
+    </div>
+  );
+}
+
+function FocusInterfaces({ interfaces }: { interfaces: ActionTreeNode<DemoData>[] }) {
+  if (!interfaces.length) {
+    return null;
+  }
+
+  return (
+    <div className="focus-interfaces">
+      {interfaces.map((interfaceNode) => (
+        <div className={`focus-interface role-${interfaceNode.role ?? "component"}`} key={interfaceNode.id}>
+          <div>
+            <span>{interfaceNode.role ?? "interface"}</span>
+            <strong>{interfaceNode.label}</strong>
+          </div>
+          <small>{interfaceNode.summary ?? interfaceNode.kind ?? "ActionNode interface"}</small>
         </div>
-      ) : null}
-      {children.length ? (
-        <div className="focus-children">
-          {children.map((child) => (
-            <div className={`focus-child role-${child.role ?? "component"} state-${runner.getStatus(child.id)}`} key={child.id}>
-              <span className="focus-child-dot" />
-              <strong>{child.label}</strong>
-              <small>{child.role ?? "component"}</small>
-            </div>
-          ))}
+      ))}
+    </div>
+  );
+}
+
+function FocusChildren({ nodes, runner }: { nodes: ActionTreeNode<DemoData>[]; runner: Runner }) {
+  if (!nodes.length) {
+    return null;
+  }
+
+  return (
+    <div className="focus-children">
+      {nodes.map((child) => (
+        <div className={`focus-child role-${child.role ?? "component"} state-${runner.getStatus(child.id)}`} key={child.id}>
+          <span className="focus-child-dot" />
+          <strong>{child.label}</strong>
+          <small>{child.role ?? "component"}</small>
         </div>
-      ) : null}
+      ))}
+    </div>
+  );
+}
+
+function DefaultMiniMapNode({
+  ctx,
+  depth = 0,
+  done = false,
+  inPath,
+}: {
+  ctx: ActionRenderContext<DemoData>;
+  depth?: number;
+  done?: boolean;
+  inPath?: boolean;
+}) {
+  const path = inPath ?? ctx.runner.activePath.includes(ctx.node.id);
+  const completed = done || ctx.runner.isDone(ctx.node.id);
+
+  return (
+    <div
+      className={`canvas-node depth-${depth} role-${ctx.node.role ?? "component"} state-${ctx.status} ${ctx.active ? "is-active" : ""} ${path ? "is-path" : ""} ${completed ? "is-done" : ""}`}
+    >
+      <span className="canvas-node-dot" />
+      <span className="canvas-node-label">{ctx.node.label}</span>
+    </div>
+  );
+}
+
+function DefaultExpandedNode({ ctx }: { ctx: ActionRenderContext<DemoData> }) {
+  return (
+    <div className={moduleClassName("second-step", ctx.status)}>
+      <Check className="second-done-mark" />
+      <span>{ctx.node.meta?.order ? String(ctx.node.meta.order) : "-"}</span>
+      <strong>{ctx.node.label}</strong>
+      <small>{ctx.node.role ?? "action"}</small>
+    </div>
+  );
+}
+
+function DefaultStageNode({ ctx }: { ctx: ActionRenderContext<DemoData> }) {
+  const index = typeof ctx.node.meta?.index === "number" ? ctx.node.meta.index : 0;
+  const tone = typeof ctx.node.meta?.tone === "string" ? ctx.node.meta.tone : "cyan";
+  const input = typeof ctx.node.meta?.input === "string" ? ctx.node.meta.input : "in";
+  const output = typeof ctx.node.meta?.output === "string" ? ctx.node.meta.output : "out";
+
+  return (
+    <div className={`action-node action-node-${index} tone-${tone}`}>
+      <div className="node-shell">
+        <StageIcon node={ctx.node} />
+      </div>
+      <div className="node-name">{ctx.node.label}</div>
+      <div className="node-io">
+        {input} {"->"} {output}
+      </div>
     </div>
   );
 }
@@ -456,16 +613,14 @@ function SecondLevelMachine({ runner }: { runner: Runner }) {
           </div>
         </div>
         <div className="second-body">
-          {["接收输入", "以太网帧", "CRC 校验", "MAC 查表", "输出结果"].map((step, index) => {
-            const node = runner.getNode(secondActionIds[index]);
-            return (
-              <div className={moduleClassName("second-step", runner.getStatus(secondActionIds[index]))} key={step}>
-                <Check className="second-done-mark" />
-                <span>{index + 1}</span>
-                <strong>{step}</strong>
-                <small>{node?.role ?? "action"}</small>
-              </div>
-            );
+          {secondActionIds.map((actionId, index) => {
+            const node = runner.getNode(actionId);
+            if (!node) {
+              return null;
+            }
+            const ctx = createRenderContext({ ...node, meta: { ...node.meta, order: index + 1 } }, runner);
+            const plugin = actionPluginRegistry.resolve(node);
+            return <div key={actionId}>{plugin?.renderExpanded?.(ctx) ?? <DefaultExpandedNode ctx={ctx} />}</div>;
           })}
         </div>
         <div className="return-path">
@@ -758,9 +913,13 @@ const styles = `
     filter: drop-shadow(0 0 4px rgba(34,211,238,0.8));
   }
 
-  .canvas-node {
+  .canvas-node-anchor {
     position: absolute;
     z-index: 2;
+    transform: translate(-50%, -50%);
+  }
+
+  .canvas-node {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -775,14 +934,14 @@ const styles = `
     font-weight: 750;
     line-height: 1;
     box-shadow: 0 10px 22px rgba(0,0,0,0.24);
-    transform: translate(-50%, -50%) scale(0.88);
+    transform: scale(0.88);
     transform-origin: center;
     transition: border-color 220ms ease, background 220ms ease, color 220ms ease, opacity 220ms ease, transform 220ms ease, box-shadow 220ms ease;
   }
 
   .canvas-node.depth-0 {
     color: rgb(226,232,240);
-    transform: translate(-50%, -50%) scale(0.96);
+    transform: scale(0.96);
   }
 
   .canvas-node.is-path {
@@ -790,7 +949,7 @@ const styles = `
     background: rgba(8,47,73,0.84);
     color: rgb(207,250,254);
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.02);
+    transform: scale(1.02);
   }
 
   .canvas-node.is-active {
@@ -798,7 +957,7 @@ const styles = `
     background: linear-gradient(180deg, rgba(14,116,144,0.95), rgba(8,47,73,0.98));
     color: rgb(240,253,250);
     box-shadow: 0 0 28px rgba(34,211,238,0.28), 0 16px 34px rgba(0,0,0,0.34);
-    transform: translate(-50%, -50%) scale(1.18);
+    transform: scale(1.18);
   }
 
   .canvas-node.is-done:not(.is-active) {
@@ -1244,6 +1403,10 @@ const styles = `
     padding: 16px;
   }
 
+  .second-body > div {
+    min-width: 0;
+  }
+
   .second-step {
     position: relative;
     display: grid;
@@ -1622,6 +1785,55 @@ const styles = `
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 9px;
     text-transform: uppercase;
+  }
+
+  .ethernet-frame-plugin {
+    border-color: rgba(96,165,250,0.54);
+  }
+
+  .ethernet-frame-view {
+    display: grid;
+    grid-template-columns: 1.2fr 1.2fr 1.7fr 0.9fr;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .ethernet-field {
+    display: grid;
+    min-height: 58px;
+    align-content: center;
+    gap: 6px;
+    border: 1px solid rgba(96,165,250,0.34);
+    border-radius: 8px;
+    background: rgba(30,64,175,0.18);
+    padding: 8px;
+    text-align: center;
+  }
+
+  .ethernet-field.state-entering,
+  .ethernet-field.state-running,
+  .ethernet-field.state-expanded,
+  .ethernet-field.state-waiting-child {
+    border-color: rgba(103,232,249,0.78);
+    box-shadow: 0 0 18px rgba(34,211,238,0.18);
+  }
+
+  .ethernet-field.state-done,
+  .ethernet-field.state-exited {
+    border-color: rgba(34,197,94,0.50);
+    background: rgba(20,83,45,0.24);
+  }
+
+  .ethernet-field span {
+    color: rgb(147,197,253);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+  }
+
+  .ethernet-field strong {
+    color: rgb(248,250,252);
+    font-size: 10px;
   }
 
   .io-row {

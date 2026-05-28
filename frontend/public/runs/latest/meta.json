@@ -1,0 +1,13 @@
+{
+  "packet_capture_mode": "summary",
+  "packet_protocols": [
+    "ARP",
+    "ICMP",
+    "TCP",
+    "UDP"
+  ],
+  "run_id": "run_20260527_081527_001",
+  "sampler_interval_ms": 1000,
+  "started_at": "2026-05-27T08:15:27.371771Z",
+  "version": 1
+}

@@ -1,0 +1,17 @@
+{
+  "first_frame_ts": 1779869728.249714,
+  "frame_count": 56,
+  "interface_count": 24,
+  "last_frame_ts": 1779869729.260076,
+  "link_count": 12,
+  "node_count": 13,
+  "packet_protocols": [
+    "ARP",
+    "ICMP",
+    "TCP",
+    "UDP"
+  ],
+  "run_id": "run_20260527_081527_001",
+  "sampler_interval_ms": 1000,
+  "started_at": "2026-05-27T08:15:27.371771Z"
+}

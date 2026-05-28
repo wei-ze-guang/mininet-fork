@@ -1,0 +1,415 @@
+{
+  "nodes": {
+    "run_20260527_081527_001:h11": {
+      "kind": "host",
+      "mn_name": "h11",
+      "node_id": "run_20260527_081527_001:h11",
+      "tables": {
+        "link_stats": {
+          "count": 1,
+          "first_ts": 1779869727.439039,
+          "last_ts": 1779869727.439039,
+          "record_indexes": [
+            5
+          ],
+          "table": "link_stats"
+        },
+        "neighbors": {
+          "count": 1,
+          "first_ts": 1779869727.433415,
+          "last_ts": 1779869727.433415,
+          "record_indexes": [
+            4
+          ],
+          "table": "neighbors"
+        },
+        "routes": {
+          "count": 1,
+          "first_ts": 1779869727.424091,
+          "last_ts": 1779869727.424091,
+          "record_indexes": [
+            3
+          ],
+          "table": "routes"
+        }
+      }
+    },
+    "run_20260527_081527_001:h12": {
+      "kind": "host",
+      "mn_name": "h12",
+      "node_id": "run_20260527_081527_001:h12",
+      "tables": {
+        "link_stats": {
+          "count": 1,
+          "first_ts": 1779869727.4571042,
+          "last_ts": 1779869727.4571042,
+          "record_indexes": [
+            8
+          ],
+          "table": "link_stats"
+        },
+        "neighbors": {
+          "count": 1,
+          "first_ts": 1779869727.4534292,
+          "last_ts": 1779869727.4534292,
+          "record_indexes": [
+            7
+          ],
+          "table": "neighbors"
+        },
+        "routes": {
+          "count": 1,
+          "first_ts": 1779869727.4498615,
+          "last_ts": 1779869727.4498615,
+          "record_indexes": [
+            6
+          ],
+          "table": "routes"
+        }
+      }
+    },
+    "run_20260527_081527_001:h13": {
+      "kind": "host",
+      "mn_name": "h13",
+      "node_id": "run_20260527_081527_001:h13",
+      "tables": {
+        "link_stats": {
+          "count": 1,
+          "first_ts": 1779869727.4884007,
+          "last_ts": 1779869727.4884007,
+          "record_indexes": [
+            11
+          ],
+          "table": "link_stats"
+        },
+        "neighbors": {
+          "count": 1,
+          "first_ts": 1779869727.4857523,
+          "last_ts": 1779869727.4857523,
+          "record_indexes": [
+            10
+          ],
+          "table": "neighbors"
+        },
+        "routes": {
+          "count": 1,
+          "first_ts": 1779869727.4767475,
+          "last_ts": 1779869727.4767475,
+          "record_indexes": [
+            9
+          ],
+          "table": "routes"
+        }
+      }
+    },
+    "run_20260527_081527_001:h21": {
+      "kind": "host",
+      "mn_name": "h21",
+      "node_id": "run_20260527_081527_001:h21",
+      "tables": {
+        "link_stats": {
+          "count": 1,
+          "first_ts": 1779869727.5088804,
+          "last_ts": 1779869727.5088804,
+          "record_indexes": [
+            14
+          ],
+          "table": "link_stats"
+        },
+        "neighbors": {
+          "count": 1,
+          "first_ts": 1779869727.5014265,
+          "last_ts": 1779869727.5014265,
+          "record_indexes": [
+            13
+          ],
+          "table": "neighbors"
+        },
+        "routes": {
+          "count": 1,
+          "first_ts": 1779869727.4973576,
+          "last_ts": 1779869727.4973576,
+          "record_indexes": [
+            12
+          ],
+          "table": "routes"
+        }
+      }
+    },
+    "run_20260527_081527_001:h22": {
+      "kind": "host",
+      "mn_name": "h22",
+      "node_id": "run_20260527_081527_001:h22",
+      "tables": {
+        "link_stats": {
+          "count": 1,
+          "first_ts": 1779869727.545015,
+          "last_ts": 1779869727.545015,
+          "record_indexes": [
+            17
+          ],
+          "table": "link_stats"
+        },
+        "neighbors": {
+          "count": 1,
+          "first_ts": 1779869727.5260959,
+          "last_ts": 1779869727.5260959,
+          "record_indexes": [
+            16
+          ],
+          "table": "neighbors"
+        },
+        "routes": {
+          "count": 1,
+          "first_ts": 1779869727.5150008,
+          "last_ts": 1779869727.5150008,
+          "record_indexes": [
+            15
+          ],
+          "table": "routes"
+        }
+      }
+    },
+    "run_20260527_081527_001:h23": {
+      "kind": "host",
+      "mn_name": "h23",
+      "node_id": "run_20260527_081527_001:h23",
+      "tables": {
+        "link_stats": {
+          "count": 1,
+          "first_ts": 1779869727.5744567,
+          "last_ts": 1779869727.5744567,
+          "record_indexes": [
+            20
+          ],
+          "table": "link_stats"
+        },
+        "neighbors": {
+          "count": 1,
+          "first_ts": 1779869727.5711608,
+          "last_ts": 1779869727.5711608,
+          "record_indexes": [
+            19
+          ],
+          "table": "neighbors"
+        },
+        "routes": {
+          "count": 1,
+          "first_ts": 1779869727.5493927,
+          "last_ts": 1779869727.5493927,
+          "record_indexes": [
+            18
+          ],
+          "table": "routes"
+        }
+      }
+    },
+    "run_20260527_081527_001:h31": {
+      "kind": "host",
+      "mn_name": "h31",
+      "node_id": "run_20260527_081527_001:h31",
+      "tables": {
+        "link_stats": {
+          "count": 1,
+          "first_ts": 1779869727.5969005,
+          "last_ts": 1779869727.5969005,
+          "record_indexes": [
+            23
+          ],
+          "table": "link_stats"
+        },
+        "neighbors": {
+          "count": 1,
+          "first_ts": 1779869727.5821657,
+          "last_ts": 1779869727.5821657,
+          "record_indexes": [
+            22
+          ],
+          "table": "neighbors"
+        },
+        "routes": {
+          "count": 1,
+          "first_ts": 1779869727.5796864,
+          "last_ts": 1779869727.5796864,
+          "record_indexes": [
+            21
+          ],
+          "table": "routes"
+        }
+      }
+    },
+    "run_20260527_081527_001:h32": {
+      "kind": "host",
+      "mn_name": "h32",
+      "node_id": "run_20260527_081527_001:h32",
+      "tables": {
+        "link_stats": {
+          "count": 1,
+          "first_ts": 1779869727.6160553,
+          "last_ts": 1779869727.6160553,
+          "record_indexes": [
+            26
+          ],
+          "table": "link_stats"
+        },
+        "neighbors": {
+          "count": 1,
+          "first_ts": 1779869727.6131258,
+          "last_ts": 1779869727.6131258,
+          "record_indexes": [
+            25
+          ],
+          "table": "neighbors"
+        },
+        "routes": {
+          "count": 1,
+          "first_ts": 1779869727.6011584,
+          "last_ts": 1779869727.6011584,
+          "record_indexes": [
+            24
+          ],
+          "table": "routes"
+        }
+      }
+    },
+    "run_20260527_081527_001:h33": {
+      "kind": "host",
+      "mn_name": "h33",
+      "node_id": "run_20260527_081527_001:h33",
+      "tables": {
+        "link_stats": {
+          "count": 1,
+          "first_ts": 1779869727.6360602,
+          "last_ts": 1779869727.6360602,
+          "record_indexes": [
+            29
+          ],
+          "table": "link_stats"
+        },
+        "neighbors": {
+          "count": 1,
+          "first_ts": 1779869727.6327631,
+          "last_ts": 1779869727.6327631,
+          "record_indexes": [
+            28
+          ],
+          "table": "neighbors"
+        },
+        "routes": {
+          "count": 1,
+          "first_ts": 1779869727.62687,
+          "last_ts": 1779869727.62687,
+          "record_indexes": [
+            27
+          ],
+          "table": "routes"
+        }
+      }
+    },
+    "run_20260527_081527_001:r1": {
+      "kind": "router",
+      "mn_name": "r1",
+      "node_id": "run_20260527_081527_001:r1",
+      "tables": {
+        "link_stats": {
+          "count": 1,
+          "first_ts": 1779869727.416624,
+          "last_ts": 1779869727.416624,
+          "record_indexes": [
+            2
+          ],
+          "table": "link_stats"
+        },
+        "neighbors": {
+          "count": 1,
+          "first_ts": 1779869727.4129715,
+          "last_ts": 1779869727.4129715,
+          "record_indexes": [
+            1
+          ],
+          "table": "neighbors"
+        },
+        "routes": {
+          "count": 1,
+          "first_ts": 1779869727.376784,
+          "last_ts": 1779869727.376784,
+          "record_indexes": [
+            0
+          ],
+          "table": "routes"
+        }
+      }
+    },
+    "run_20260527_081527_001:s1": {
+      "kind": "ovs",
+      "mn_name": "s1",
+      "node_id": "run_20260527_081527_001:s1",
+      "tables": {
+        "flows": {
+          "count": 1,
+          "first_ts": 1779869727.6438262,
+          "last_ts": 1779869727.6438262,
+          "record_indexes": [
+            30
+          ],
+          "table": "flows"
+        }
+      }
+    },
+    "run_20260527_081527_001:s2": {
+      "kind": "ovs",
+      "mn_name": "s2",
+      "node_id": "run_20260527_081527_001:s2",
+      "tables": {
+        "flows": {
+          "count": 1,
+          "first_ts": 1779869727.6568787,
+          "last_ts": 1779869727.6568787,
+          "record_indexes": [
+            31
+          ],
+          "table": "flows"
+        }
+      }
+    },
+    "run_20260527_081527_001:s3": {
+      "kind": "ovs",
+      "mn_name": "s3",
+      "node_id": "run_20260527_081527_001:s3",
+      "tables": {
+        "flows": {
+          "count": 1,
+          "first_ts": 1779869727.6664054,
+          "last_ts": 1779869727.6664054,
+          "record_indexes": [
+            32
+          ],
+          "table": "flows"
+        }
+      }
+    }
+  },
+  "record_count": 33,
+  "tables": {
+    "flows": {
+      "count": 3,
+      "first_ts": 1779869727.6438262,
+      "last_ts": 1779869727.6664054
+    },
+    "link_stats": {
+      "count": 10,
+      "first_ts": 1779869727.416624,
+      "last_ts": 1779869727.6360602
+    },
+    "neighbors": {
+      "count": 10,
+      "first_ts": 1779869727.4129715,
+      "last_ts": 1779869727.6327631
+    },
+    "routes": {
+      "count": 10,
+      "first_ts": 1779869727.376784,
+      "last_ts": 1779869727.62687
+    }
+  }
+}

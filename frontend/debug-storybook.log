@@ -1,0 +1,100 @@
+[19:07:36.762] [INFO] This command is running via an AI agent: codex. Proceeding with agentic installation flow.
+[19:07:37.212] [INFO] Initializing Storybook
+[19:07:37.222] [DEBUG] Getting package.json info for /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/package.json...
+[19:07:37.222] [INFO] Package manager: pnpm
+[19:07:37.225] [DEBUG] Getting CLI versions from NPM for storybook...
+[19:07:37.225] [DEBUG] Executing command: pnpm info storybook version
+[19:07:37.330] [INFO] Adding Storybook version 10.4.1 to your project
+[19:07:37.330] [DEBUG] Executing command: pnpm config get minimumReleaseAge
+[19:07:37.337] [DEBUG] Skipping minimum-release-age precheck after an unexpected failure: ExecaError: Command failed with ENOENT: pnpm config get minimumReleaseAge
+spawn pnpm ENOENT
+[19:07:37.338] [DEBUG] Using cached package.json for /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/package.json...
+[19:07:37.339] [DEBUG] Project type detected: nextjs
+[19:07:37.339] [DEBUG] Using cached package.json for /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/package.json...
+[19:07:37.400] [INFO] Framework detected: nextjs-vite
+[19:07:37.402] [DEBUG] Getting installed version for vitest...
+[19:07:37.404] [DEBUG] Executing command: pnpm list "vitest" --json --depth=99
+[19:07:37.416] [DEBUG] Error finding installations for vitest: ExecaError: Command failed with exit code 127: pnpm list '"vitest"' --json '--depth=99'
+
+/bin/sh: pnpm: command not found
+[19:07:37.416] [DEBUG] No installations found for vitest
+[19:07:37.416] [DEBUG] Getting installed version for msw...
+[19:07:37.416] [DEBUG] Executing command: pnpm list "msw" --json --depth=99
+[19:07:37.426] [DEBUG] Error finding installations for msw: ExecaError: Command failed with exit code 127: pnpm list '"msw"' --json '--depth=99'
+
+/bin/sh: pnpm: command not found
+[19:07:37.426] [DEBUG] No installations found for msw
+[19:07:37.442] [INFO] Storybook collects completely anonymous usage telemetry. We use it to shape Storybook's roadmap and prioritize features. You can learn more, including how to opt out, at https://storybook.js.org/telemetry
+[19:07:38.690] [DEBUG] Using cached package.json for /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/package.json...
+[19:07:38.690] [DEBUG] Using cached package.json for /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/package.json...
+[19:07:38.690] [DEBUG] Using cached package.json for /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/package.json...
+[19:07:38.690] [INFO] - Configuring ESLint plugin
+[19:07:38.691] [DEBUG] Detected flat config at /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/eslint.config.mjs
+[19:07:38.790] [DEBUG] Getting CLI versions from NPM for storybook...
+[19:07:38.790] [DEBUG] Executing command: pnpm info storybook version
+[19:07:38.809] [DEBUG] Getting CLI versions from NPM for @storybook/nextjs-vite...
+[19:07:38.809] [DEBUG] Executing command: pnpm info @storybook/nextjs-vite version
+[19:07:38.814] [DEBUG] Getting CLI versions from NPM for @chromatic-com/storybook...
+[19:07:38.814] [DEBUG] Executing command: pnpm info @chromatic-com/storybook version
+[19:07:38.833] [DEBUG] Getting CLI versions from NPM for @storybook/addon-vitest...
+[19:07:38.833] [DEBUG] Executing command: pnpm info @storybook/addon-vitest version
+[19:07:38.841] [DEBUG] Getting CLI versions from NPM for @storybook/addon-a11y...
+[19:07:38.841] [DEBUG] Executing command: pnpm info @storybook/addon-a11y version
+[19:07:38.849] [DEBUG] Getting CLI versions from NPM for @storybook/addon-docs...
+[19:07:38.849] [DEBUG] Executing command: pnpm info @storybook/addon-docs version
+[19:07:38.855] [DEBUG] Getting CLI versions from NPM for @storybook/addon-mcp...
+[19:07:38.855] [DEBUG] Executing command: pnpm info @storybook/addon-mcp version
+[19:07:38.859] [DEBUG] Getting CLI versions from NPM for vite...
+[19:07:38.859] [DEBUG] Executing command: pnpm info vite version
+[19:07:38.862] [DEBUG] Getting CLI versions from NPM for eslint-plugin-storybook...
+[19:07:38.862] [DEBUG] Executing command: pnpm info eslint-plugin-storybook version
+[19:07:38.875] [INFO] - Configuring main.ts
+[19:07:38.877] [INFO] - Configuring preview.ts
+[19:07:38.878] [INFO] - Adding Storybook command to package.json
+[19:07:38.879] [DEBUG] Getting package.json info for /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/package.json...
+[19:07:38.879] [DEBUG] Using cached package.json for /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/package.json...
+[19:07:38.879] [DEBUG] Using cached package.json for /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/package.json...
+[19:07:38.880] [INFO] - Copying framework templates
+[19:07:38.947] [DEBUG] Executing command: npm config get registry -ws=false -iwr
+[19:07:41.092] [INFO] Storybook configuration generated
+[19:07:41.093] [DEBUG] Using cached package.json for /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/package.json...
+[19:07:41.093] [DEBUG] Using cached installed version for vitest...
+[19:07:41.093] [DEBUG] Getting installed version for @vitest/coverage-v8...
+[19:07:41.093] [DEBUG] Executing command: pnpm list "@vitest/coverage-v8" --json --depth=99
+[19:07:41.107] [DEBUG] Error finding installations for @vitest/coverage-v8: ExecaError: Command failed with exit code 127: pnpm list '"@vitest/coverage-v8"' --json '--depth=99'
+
+/bin/sh: pnpm: command not found
+[19:07:41.107] [DEBUG] No installations found for @vitest/coverage-v8
+[19:07:41.107] [DEBUG] Getting installed version for @vitest/coverage-istanbul...
+[19:07:41.107] [DEBUG] Executing command: pnpm list "@vitest/coverage-istanbul" --json --depth=99
+[19:07:41.116] [DEBUG] Error finding installations for @vitest/coverage-istanbul: ExecaError: Command failed with exit code 127: pnpm list '"@vitest/coverage-istanbul"' --json '--depth=99'
+
+/bin/sh: pnpm: command not found
+[19:07:41.117] [DEBUG] No installations found for @vitest/coverage-istanbul
+[19:07:41.117] [INFO] Adding devDependencies:
+- storybook@10.4.1
+- @storybook/nextjs-vite@10.4.1
+- @chromatic-com/storybook@^null
+- @storybook/addon-vitest@10.4.1
+- @storybook/addon-a11y@10.4.1
+- @storybook/addon-docs@10.4.1
+- @storybook/addon-mcp@^null
+- vite@^null
+- eslint-plugin-storybook@10.4.1
+- vitest
+- playwright
+- @vitest/browser-playwright
+- @vitest/coverage-v8
+[19:07:41.118] [DEBUG] Using cached package.json for /Users/macbook/java/IdeaProjects/github-source/net-work/mininet-fork/frontend/package.json...
+[19:07:41.118] [DEBUG] Getting CLI versions from NPM for storybook...
+[19:07:41.118] [DEBUG] Executing command: pnpm info storybook version
+[19:07:41.124] [WARN] 
+     Error: No version found for storybook
+[19:07:41.124] [DEBUG] Getting CLI versions from NPM for @storybook/nextjs-vite...
+[19:07:41.124] [DEBUG] Executing command: pnpm info @storybook/nextjs-vite version
+[19:07:41.130] [WARN] 
+     Error: No version found for @storybook/nextjs-vite
+[19:07:41.130] [DEBUG] Getting CLI versions from NPM for @chromatic-com/storybook...
+[19:07:41.130] [DEBUG] Executing command: pnpm info @chromatic-com/storybook version
+[19:07:41.135] [ERROR] 
+     Error: No version found for @chromatic-com/storybook

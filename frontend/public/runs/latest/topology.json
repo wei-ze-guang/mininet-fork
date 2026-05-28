@@ -1,0 +1,404 @@
+{
+  "interfaces": [
+    {
+      "intf_id": "run_20260527_081527_001:r1:r1-eth0",
+      "ip_addrs": [
+        "10.0.1.1"
+      ],
+      "mac": "e6:2a:81:04:94:e5",
+      "mn_name": "r1-eth0",
+      "node_id": "run_20260527_081527_001:r1"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:r1:r1-eth1",
+      "ip_addrs": [],
+      "mac": "ce:ed:4a:30:61:fc",
+      "mn_name": "r1-eth1",
+      "node_id": "run_20260527_081527_001:r1"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:r1:r1-eth2",
+      "ip_addrs": [],
+      "mac": "42:47:0d:ff:07:7a",
+      "mn_name": "r1-eth2",
+      "node_id": "run_20260527_081527_001:r1"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:h11:h11-eth0",
+      "ip_addrs": [
+        "10.0.1.11"
+      ],
+      "mac": "b2:c4:45:b4:b7:61",
+      "mn_name": "h11-eth0",
+      "node_id": "run_20260527_081527_001:h11"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:h12:h12-eth0",
+      "ip_addrs": [
+        "10.0.1.12"
+      ],
+      "mac": "86:7c:38:a2:a8:3a",
+      "mn_name": "h12-eth0",
+      "node_id": "run_20260527_081527_001:h12"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:h13:h13-eth0",
+      "ip_addrs": [
+        "10.0.1.13"
+      ],
+      "mac": "42:61:82:f7:52:ab",
+      "mn_name": "h13-eth0",
+      "node_id": "run_20260527_081527_001:h13"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:h21:h21-eth0",
+      "ip_addrs": [
+        "10.0.2.11"
+      ],
+      "mac": "3a:cc:e0:7a:0b:59",
+      "mn_name": "h21-eth0",
+      "node_id": "run_20260527_081527_001:h21"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:h22:h22-eth0",
+      "ip_addrs": [
+        "10.0.2.12"
+      ],
+      "mac": "3e:74:72:ae:a2:a6",
+      "mn_name": "h22-eth0",
+      "node_id": "run_20260527_081527_001:h22"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:h23:h23-eth0",
+      "ip_addrs": [
+        "10.0.2.13"
+      ],
+      "mac": "0e:24:80:1c:82:28",
+      "mn_name": "h23-eth0",
+      "node_id": "run_20260527_081527_001:h23"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:h31:h31-eth0",
+      "ip_addrs": [
+        "10.0.3.11"
+      ],
+      "mac": "ce:c9:a6:92:c9:f4",
+      "mn_name": "h31-eth0",
+      "node_id": "run_20260527_081527_001:h31"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:h32:h32-eth0",
+      "ip_addrs": [
+        "10.0.3.12"
+      ],
+      "mac": "2a:53:b8:14:c5:be",
+      "mn_name": "h32-eth0",
+      "node_id": "run_20260527_081527_001:h32"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:h33:h33-eth0",
+      "ip_addrs": [
+        "10.0.3.13"
+      ],
+      "mac": "92:bb:14:be:be:90",
+      "mn_name": "h33-eth0",
+      "node_id": "run_20260527_081527_001:h33"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s1:s1-eth1",
+      "ip_addrs": [],
+      "mac": "da:07:50:d4:81:4c",
+      "mn_name": "s1-eth1",
+      "node_id": "run_20260527_081527_001:s1"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s1:s1-eth2",
+      "ip_addrs": [],
+      "mac": "3a:0d:30:73:7f:58",
+      "mn_name": "s1-eth2",
+      "node_id": "run_20260527_081527_001:s1"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s1:s1-eth3",
+      "ip_addrs": [],
+      "mac": "de:ff:0a:59:ab:f6",
+      "mn_name": "s1-eth3",
+      "node_id": "run_20260527_081527_001:s1"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s1:s1-eth4",
+      "ip_addrs": [],
+      "mac": "ae:a7:64:a4:ca:47",
+      "mn_name": "s1-eth4",
+      "node_id": "run_20260527_081527_001:s1"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s2:s2-eth1",
+      "ip_addrs": [],
+      "mac": "b2:c8:d0:1a:b8:53",
+      "mn_name": "s2-eth1",
+      "node_id": "run_20260527_081527_001:s2"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s2:s2-eth2",
+      "ip_addrs": [],
+      "mac": "ce:50:ef:03:5e:29",
+      "mn_name": "s2-eth2",
+      "node_id": "run_20260527_081527_001:s2"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s2:s2-eth3",
+      "ip_addrs": [],
+      "mac": "a6:c2:64:71:bd:93",
+      "mn_name": "s2-eth3",
+      "node_id": "run_20260527_081527_001:s2"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s2:s2-eth4",
+      "ip_addrs": [],
+      "mac": "ae:c9:ec:e9:12:16",
+      "mn_name": "s2-eth4",
+      "node_id": "run_20260527_081527_001:s2"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s3:s3-eth1",
+      "ip_addrs": [],
+      "mac": "32:97:f2:8a:06:9f",
+      "mn_name": "s3-eth1",
+      "node_id": "run_20260527_081527_001:s3"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s3:s3-eth2",
+      "ip_addrs": [],
+      "mac": "2e:39:a5:f4:37:44",
+      "mn_name": "s3-eth2",
+      "node_id": "run_20260527_081527_001:s3"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s3:s3-eth3",
+      "ip_addrs": [],
+      "mac": "56:25:7b:7a:34:46",
+      "mn_name": "s3-eth3",
+      "node_id": "run_20260527_081527_001:s3"
+    },
+    {
+      "intf_id": "run_20260527_081527_001:s3:s3-eth4",
+      "ip_addrs": [],
+      "mac": "2a:a9:1d:f6:b1:eb",
+      "mn_name": "s3-eth4",
+      "node_id": "run_20260527_081527_001:s3"
+    }
+  ],
+  "links": [
+    {
+      "a_intf_id": "run_20260527_081527_001:r1:r1-eth0",
+      "b_intf_id": "run_20260527_081527_001:s1:s1-eth1",
+      "link_id": "run_20260527_081527_001:link:r1-eth0__s1-eth1"
+    },
+    {
+      "a_intf_id": "run_20260527_081527_001:r1:r1-eth1",
+      "b_intf_id": "run_20260527_081527_001:s2:s2-eth1",
+      "link_id": "run_20260527_081527_001:link:r1-eth1__s2-eth1"
+    },
+    {
+      "a_intf_id": "run_20260527_081527_001:r1:r1-eth2",
+      "b_intf_id": "run_20260527_081527_001:s3:s3-eth1",
+      "link_id": "run_20260527_081527_001:link:r1-eth2__s3-eth1"
+    },
+    {
+      "a_intf_id": "run_20260527_081527_001:h11:h11-eth0",
+      "b_intf_id": "run_20260527_081527_001:s1:s1-eth2",
+      "link_id": "run_20260527_081527_001:link:h11-eth0__s1-eth2"
+    },
+    {
+      "a_intf_id": "run_20260527_081527_001:h12:h12-eth0",
+      "b_intf_id": "run_20260527_081527_001:s1:s1-eth3",
+      "link_id": "run_20260527_081527_001:link:h12-eth0__s1-eth3"
+    },
+    {
+      "a_intf_id": "run_20260527_081527_001:h13:h13-eth0",
+      "b_intf_id": "run_20260527_081527_001:s1:s1-eth4",
+      "link_id": "run_20260527_081527_001:link:h13-eth0__s1-eth4"
+    },
+    {
+      "a_intf_id": "run_20260527_081527_001:h21:h21-eth0",
+      "b_intf_id": "run_20260527_081527_001:s2:s2-eth2",
+      "link_id": "run_20260527_081527_001:link:h21-eth0__s2-eth2"
+    },
+    {
+      "a_intf_id": "run_20260527_081527_001:h22:h22-eth0",
+      "b_intf_id": "run_20260527_081527_001:s2:s2-eth3",
+      "link_id": "run_20260527_081527_001:link:h22-eth0__s2-eth3"
+    },
+    {
+      "a_intf_id": "run_20260527_081527_001:h23:h23-eth0",
+      "b_intf_id": "run_20260527_081527_001:s2:s2-eth4",
+      "link_id": "run_20260527_081527_001:link:h23-eth0__s2-eth4"
+    },
+    {
+      "a_intf_id": "run_20260527_081527_001:h31:h31-eth0",
+      "b_intf_id": "run_20260527_081527_001:s3:s3-eth2",
+      "link_id": "run_20260527_081527_001:link:h31-eth0__s3-eth2"
+    },
+    {
+      "a_intf_id": "run_20260527_081527_001:h32:h32-eth0",
+      "b_intf_id": "run_20260527_081527_001:s3:s3-eth3",
+      "link_id": "run_20260527_081527_001:link:h32-eth0__s3-eth3"
+    },
+    {
+      "a_intf_id": "run_20260527_081527_001:h33:h33-eth0",
+      "b_intf_id": "run_20260527_081527_001:s3:s3-eth4",
+      "link_id": "run_20260527_081527_001:link:h33-eth0__s3-eth4"
+    }
+  ],
+  "nodes": [
+    {
+      "ip_addrs": [
+        "10.0.1.1"
+      ],
+      "kind": "router",
+      "mac_addrs": [
+        "e6:2a:81:04:94:e5",
+        "ce:ed:4a:30:61:fc",
+        "42:47:0d:ff:07:7a"
+      ],
+      "mn_name": "r1",
+      "node_id": "run_20260527_081527_001:r1"
+    },
+    {
+      "ip_addrs": [
+        "10.0.1.11"
+      ],
+      "kind": "host",
+      "mac_addrs": [
+        "b2:c4:45:b4:b7:61"
+      ],
+      "mn_name": "h11",
+      "node_id": "run_20260527_081527_001:h11"
+    },
+    {
+      "ip_addrs": [
+        "10.0.1.12"
+      ],
+      "kind": "host",
+      "mac_addrs": [
+        "86:7c:38:a2:a8:3a"
+      ],
+      "mn_name": "h12",
+      "node_id": "run_20260527_081527_001:h12"
+    },
+    {
+      "ip_addrs": [
+        "10.0.1.13"
+      ],
+      "kind": "host",
+      "mac_addrs": [
+        "42:61:82:f7:52:ab"
+      ],
+      "mn_name": "h13",
+      "node_id": "run_20260527_081527_001:h13"
+    },
+    {
+      "ip_addrs": [
+        "10.0.2.11"
+      ],
+      "kind": "host",
+      "mac_addrs": [
+        "3a:cc:e0:7a:0b:59"
+      ],
+      "mn_name": "h21",
+      "node_id": "run_20260527_081527_001:h21"
+    },
+    {
+      "ip_addrs": [
+        "10.0.2.12"
+      ],
+      "kind": "host",
+      "mac_addrs": [
+        "3e:74:72:ae:a2:a6"
+      ],
+      "mn_name": "h22",
+      "node_id": "run_20260527_081527_001:h22"
+    },
+    {
+      "ip_addrs": [
+        "10.0.2.13"
+      ],
+      "kind": "host",
+      "mac_addrs": [
+        "0e:24:80:1c:82:28"
+      ],
+      "mn_name": "h23",
+      "node_id": "run_20260527_081527_001:h23"
+    },
+    {
+      "ip_addrs": [
+        "10.0.3.11"
+      ],
+      "kind": "host",
+      "mac_addrs": [
+        "ce:c9:a6:92:c9:f4"
+      ],
+      "mn_name": "h31",
+      "node_id": "run_20260527_081527_001:h31"
+    },
+    {
+      "ip_addrs": [
+        "10.0.3.12"
+      ],
+      "kind": "host",
+      "mac_addrs": [
+        "2a:53:b8:14:c5:be"
+      ],
+      "mn_name": "h32",
+      "node_id": "run_20260527_081527_001:h32"
+    },
+    {
+      "ip_addrs": [
+        "10.0.3.13"
+      ],
+      "kind": "host",
+      "mac_addrs": [
+        "92:bb:14:be:be:90"
+      ],
+      "mn_name": "h33",
+      "node_id": "run_20260527_081527_001:h33"
+    },
+    {
+      "ip_addrs": [],
+      "kind": "ovs",
+      "mac_addrs": [
+        "da:07:50:d4:81:4c",
+        "3a:0d:30:73:7f:58",
+        "de:ff:0a:59:ab:f6",
+        "ae:a7:64:a4:ca:47"
+      ],
+      "mn_name": "s1",
+      "node_id": "run_20260527_081527_001:s1"
+    },
+    {
+      "ip_addrs": [],
+      "kind": "ovs",
+      "mac_addrs": [
+        "b2:c8:d0:1a:b8:53",
+        "ce:50:ef:03:5e:29",
+        "a6:c2:64:71:bd:93",
+        "ae:c9:ec:e9:12:16"
+      ],
+      "mn_name": "s2",
+      "node_id": "run_20260527_081527_001:s2"
+    },
+    {
+      "ip_addrs": [],
+      "kind": "ovs",
+      "mac_addrs": [
+        "32:97:f2:8a:06:9f",
+        "2e:39:a5:f4:37:44",
+        "56:25:7b:7a:34:46",
+        "2a:a9:1d:f6:b1:eb"
+      ],
+      "mn_name": "s3",
+      "node_id": "run_20260527_081527_001:s3"
+    }
+  ]
+}
