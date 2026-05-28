@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Layer Machine Demo</title>
+    <style>
+      :root {
+        --bg: #f7f8fb;
+        --ink: #121826;
+        --muted: #6b7280;
+        --line: #d8dee9;
+        --cyan: #06b6d4;
+        --green: #10b981;
+        --amber: #f59e0b;
+        --red: #ef4444;
+        --panel: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .stage {
+        min-height: 100vh;
+        padding: 32px;
+        display: grid;
+        align-content: center;
+        gap: 18px;
+      }
+
+      .header {
+        max-width: 1120px;
+        margin: 0 auto;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .title {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .controls {
+        display: flex;
+        gap: 8px;
+      }
+
+      button {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 8px 12px;
+        font: inherit;
+        cursor: pointer;
+        box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+      }
+
+      button.primary {
+        background: #101827;
+        color: #fff;
+        border-color: #101827;
+      }
+
+      .canvas {
+        position: relative;
+        max-width: 1120px;
+        width: 100%;
+        height: 560px;
+        margin: 0 auto;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background:
+          linear-gradient(90deg, rgb(15 23 42 / 0.035) 1px, transparent 1px) 0 0 / 48px 48px,
+          linear-gradient(rgb(15 23 42 / 0.035) 1px, transparent 1px) 0 0 / 48px 48px,
+          #fff;
+        box-shadow: 0 18px 45px rgb(15 23 42 / 0.08);
+      }
+
+      .device {
+        position: absolute;
+        top: 58px;
+        width: 170px;
+        height: 122px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+        box-shadow: 0 12px 24px rgb(15 23 42 / 0.08);
+        display: grid;
+        place-items: center;
+        text-align: center;
+      }
+
+      .device.host {
+        left: 70px;
+      }
+
+      .device.switch {
+        right: 70px;
+      }
+
+      .device-icon {
+        width: 48px;
+        height: 34px;
+        border: 2px solid #111827;
+        border-radius: 7px;
+        position: relative;
+      }
+
+      .device-icon::after {
+        content: "";
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: -10px;
+        height: 2px;
+        background: #111827;
+        box-shadow: 0 8px 0 #111827;
+      }
+
+      .device-name {
+        margin-top: 18px;
+        font-weight: 800;
+      }
+
+      .device-role {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .cable {
+        position: absolute;
+        left: 240px;
+        right: 240px;
+        top: 116px;
+        height: 10px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--cyan), #cbd5e1, var(--green));
+        box-shadow: 0 0 18px rgb(6 182 212 / 0.24);
+      }
+
+      .cable-label {
+        position: absolute;
+        left: 50%;
+        top: -32px;
+        transform: translateX(-50%);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        box-shadow: 0 8px 18px rgb(15 23 42 / 0.08);
+      }
+
+      .bit {
+        position: absolute;
+        top: -13px;
+        left: 0;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: #07111f;
+        color: #a5f3fc;
+        display: grid;
+        place-items: center;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        font-weight: 800;
+        box-shadow: 0 0 18px rgb(6 182 212 / 0.36);
+        animation: bit-run 2.1s linear infinite;
+      }
+
+      .bit:nth-child(3) {
+        animation-delay: 0.45s;
+      }
+
+      .bit:nth-child(4) {
+        animation-delay: 0.9s;
+      }
+
+      @keyframes bit-run {
+        from {
+          transform: translateX(0);
+          opacity: 0;
+        }
+        12% {
+          opacity: 1;
+        }
+        88% {
+          opacity: 1;
+        }
+        to {
+          transform: translateX(calc(100vw - 560px));
+          opacity: 0;
+        }
+      }
+
+      .machine {
+        position: absolute;
+        left: 50%;
+        bottom: 40px;
+        width: min(840px, calc(100% - 120px));
+        height: 280px;
+        transform: translateX(-50%);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgb(255 255 255 / 0.96);
+        box-shadow: 0 18px 36px rgb(15 23 42 / 0.10);
+        overflow: hidden;
+      }
+
+      .machine-header {
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .machine-title {
+        font-weight: 900;
+      }
+
+      .machine-state {
+        border: 1px solid #99f6e4;
+        border-radius: 999px;
+        background: #ecfdf5;
+        color: #047857;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .machine-body {
+        position: relative;
+        height: 230px;
+        padding: 26px 36px;
+      }
+
+      .module-row {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(120px, 1fr));
+        gap: 14px;
+        align-items: center;
+      }
+
+      .module {
+        position: relative;
+        min-height: 116px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #f8fafc;
+        padding: 14px;
+        display: grid;
+        align-content: center;
+        gap: 8px;
+        transition: 220ms ease;
+      }
+
+      .module::after {
+        content: "";
+        position: absolute;
+        right: -18px;
+        top: 50%;
+        width: 18px;
+        height: 2px;
+        background: var(--line);
+      }
+
+      .module:last-child::after {
+        display: none;
+      }
+
+      .module.active {
+        border-color: var(--cyan);
+        background: #ecfeff;
+        box-shadow: 0 0 0 3px rgb(6 182 212 / 0.15), 0 14px 22px rgb(6 182 212 / 0.12);
+        transform: translateY(-4px);
+      }
+
+      .module.done {
+        border-color: #86efac;
+        background: #f0fdf4;
+      }
+
+      .module.danger {
+        border-color: #fecaca;
+        background: #fef2f2;
+      }
+
+      .module-name {
+        font-weight: 900;
+      }
+
+      .module-detail {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .packet {
+        position: absolute;
+        left: 38px;
+        top: 182px;
+        border: 1px solid var(--cyan);
+        border-radius: 999px;
+        background: #07111f;
+        color: #a5f3fc;
+        padding: 7px 12px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        font-weight: 900;
+        box-shadow: 0 0 18px rgb(6 182 212 / 0.28);
+        animation: packet-step 7.5s ease-in-out infinite;
+      }
+
+      @keyframes packet-step {
+        0%, 9% {
+          transform: translateX(0);
+        }
+        18%, 27% {
+          transform: translateX(145px);
+        }
+        36%, 45% {
+          transform: translateX(300px);
+        }
+        54%, 63% {
+          transform: translateX(455px);
+        }
+        72%, 81% {
+          transform: translateX(610px);
+        }
+        92%, 100% {
+          transform: translateX(720px);
+          opacity: 0;
+        }
+      }
+
+      .log {
+        max-width: 1120px;
+        margin: 0 auto;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+      }
+
+      .log-item {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+        padding: 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .log-item strong {
+        display: block;
+        color: var(--ink);
+        margin-bottom: 3px;
+      }
+
+      @media (max-width: 900px) {
+        .stage {
+          padding: 16px;
+        }
+
+        .canvas {
+          height: 700px;
+        }
+
+        .device {
+          top: 34px;
+          width: 130px;
+        }
+
+        .device.host {
+          left: 24px;
+        }
+
+        .device.switch {
+          right: 24px;
+        }
+
+        .cable {
+          left: 154px;
+          right: 154px;
+        }
+
+        .machine {
+          width: calc(100% - 32px);
+          height: 470px;
+        }
+
+        .machine-body {
+          height: 420px;
+          overflow: auto;
+        }
+
+        .module-row {
+          grid-template-columns: 1fr;
+        }
+
+        .module::after,
+        .packet {
+          display: none;
+        }
+
+        .log {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="stage">
+      <header class="header">
+        <div>
+          <div class="title">数据链路层像机器一样打开</div>
+          <div class="subtitle">BitStream 到达 Switch L2 后，层展开，内部动作按顺序亮起。</div>
+        </div>
+        <div class="controls">
+          <button id="pause">暂停</button>
+          <button id="restart" class="primary">重新播放</button>
+        </div>
+      </header>
+
+      <section class="canvas" id="canvas">
+        <div class="device host">
+          <div>
+            <div class="device-icon"></div>
+            <div class="device-name">Host</div>
+            <div class="device-role">L2 发送帧</div>
+          </div>
+        </div>
+
+        <div class="cable">
+          <div class="cable-label">Cat6 物理链路 · 0/1 流动</div>
+          <div class="bit">1</div>
+          <div class="bit">0</div>
+          <div class="bit">1</div>
+        </div>
+
+        <div class="device switch">
+          <div>
+            <div class="device-icon"></div>
+            <div class="device-name">Switch</div>
+            <div class="device-role">L2 接收处理</div>
+          </div>
+        </div>
+
+        <section class="machine" id="machine">
+          <div class="machine-header">
+            <div class="machine-title">Switch L2 Machine</div>
+            <div class="machine-state" id="state">正在处理：帧定界</div>
+          </div>
+          <div class="machine-body">
+            <div class="module-row">
+              <div class="module" data-step="0">
+                <div class="module-name">帧定界</div>
+                <div class="module-detail">识别 Preamble / SFD，从比特流中找出 MAC 帧开始。</div>
+              </div>
+              <div class="module" data-step="1">
+                <div class="module-name">FCS 校验</div>
+                <div class="module-detail">对 MAC 帧字段计算 CRC，与帧尾 FCS 比较。</div>
+              </div>
+              <div class="module" data-step="2">
+                <div class="module-name">MAC 学习</div>
+                <div class="module-detail">记录源 MAC 来自入端口，更新交换机 FDB。</div>
+              </div>
+              <div class="module" data-step="3">
+                <div class="module-name">查 MAC 表</div>
+                <div class="module-detail">使用目的 MAC + VLAN 查找出接口。</div>
+              </div>
+              <div class="module" data-step="4">
+                <div class="module-name">转发</div>
+                <div class="module-detail">命中则单播转发，未命中则同 VLAN 泛洪。</div>
+              </div>
+            </div>
+            <div class="packet">Ethernet Frame · VLAN 10</div>
+          </div>
+        </section>
+      </section>
+
+      <section class="log">
+        <div class="log-item"><strong>输入</strong>BitStream：1010...</div>
+        <div class="log-item"><strong>帧</strong>Dst / Src / VLAN / Type / Payload / FCS</div>
+        <div class="log-item"><strong>校验</strong>FCS 通过才继续处理</div>
+        <div class="log-item"><strong>查表</strong>目的 MAC 命中 s1-sfp1</div>
+        <div class="log-item"><strong>输出</strong>ForwardDecision：单播转发</div>
+      </section>
+    </main>
+
+    <script>
+      const modules = Array.from(document.querySelectorAll(".module"));
+      const state = document.getElementById("state");
+      const canvas = document.getElementById("canvas");
+      const labels = ["帧定界", "FCS 校验", "MAC 学习", "查 MAC 表", "转发"];
+      let timer = null;
+      let step = 0;
+      let paused = false;
+
+      function setStep(nextStep) {
+        step = nextStep % modules.length;
+        modules.forEach((module, index) => {
+          module.classList.toggle("active", index === step);
+          module.classList.toggle("done", index < step);
+        });
+        state.textContent = `正在处理：${labels[step]}`;
+      }
+
+      function play() {
+        clearInterval(timer);
+        timer = setInterval(() => {
+          if (!paused) {
+            setStep(step + 1);
+          }
+        }, 1500);
+      }
+
+      document.getElementById("pause").addEventListener("click", (event) => {
+        paused = !paused;
+        canvas.style.animationPlayState = paused ? "paused" : "running";
+        document.querySelectorAll(".bit, .packet").forEach((element) => {
+          element.style.animationPlayState = paused ? "paused" : "running";
+        });
+        event.currentTarget.textContent = paused ? "继续" : "暂停";
+      });
+
+      document.getElementById("restart").addEventListener("click", () => {
+        paused = false;
+        document.getElementById("pause").textContent = "暂停";
+        document.querySelectorAll(".bit, .packet").forEach((element) => {
+          element.style.animation = "none";
+          element.offsetHeight;
+          element.style.animation = "";
+          element.style.animationPlayState = "running";
+        });
+        setStep(0);
+        play();
+      });
+
+      setStep(0);
+      play();
+    </script>
+  </body>
+</html>

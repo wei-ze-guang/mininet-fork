@@ -1,0 +1,540 @@
+import { demoCopperPortA, demoCopperPortB, demoFiberPort } from "@/components/physical-layer/story-data";
+import type { MacTableEntry } from "@/components/switch-inspector/mac-address-table";
+
+import type {
+  BroadcastDomain,
+  DataLinkProcess,
+  DataLinkInterface,
+  EthernetFrameSummary,
+  LinkLayerProcess,
+  MacForwardingDecision,
+  VlanMembership,
+} from "./data-link-types";
+
+export const hostAccessInterface: DataLinkInterface = {
+  id: "h11-eth0",
+  name: "h11-eth0",
+  physicalPort: demoCopperPortA,
+  macAddress: "02:42:0a:00:01:0b",
+  mtu: 1500,
+  vlanMode: "access",
+  accessVlan: 10,
+};
+
+export const switchAccessInterface: DataLinkInterface = {
+  id: "s1-eth3",
+  name: "s1-eth3",
+  physicalPort: demoCopperPortB,
+  macAddress: "02:42:0a:00:ff:03",
+  mtu: 1500,
+  vlanMode: "access",
+  accessVlan: 10,
+  stpState: "forwarding",
+  stpRole: "designated",
+};
+
+export const switchTrunkInterface: DataLinkInterface = {
+  id: "s1-sfp1",
+  name: "s1-sfp1",
+  physicalPort: demoFiberPort,
+  macAddress: "02:42:0a:00:ff:f1",
+  mtu: 9000,
+  vlanMode: "trunk",
+  taggedVlans: [10, 20, 30],
+  nativeVlan: 99,
+  stpState: "forwarding",
+  stpRole: "root",
+};
+
+export const arpRequestFrame: EthernetFrameSummary = {
+  id: "frame-arp-request",
+  destinationMac: "ff:ff:ff:ff:ff:ff",
+  sourceMac: "02:42:0a:00:01:0b",
+  etherType: "ARP",
+  vlanTag: { tpid: "0x8100", vlanId: 10 },
+  payloadBytes: 46,
+  fcs: "0x8f31a2bc",
+};
+
+export const ipv4UnicastFrame: EthernetFrameSummary = {
+  id: "frame-ipv4-unicast",
+  destinationMac: "02:42:0a:00:02:15",
+  sourceMac: "02:42:0a:00:01:0b",
+  etherType: "IPv4",
+  vlanTag: { tpid: "0x8100", vlanId: 10 },
+  payloadBytes: 84,
+  fcs: "0x4ac91e20",
+};
+
+export const macLearningEvent = {
+  sourceMac: "02:42:0a:00:01:0b",
+  ingressInterfaceId: "s1-eth3",
+  vlanId: 10,
+  ageSeconds: 0,
+};
+
+export const unicastHitDecision: MacForwardingDecision = {
+  id: "decision-unicast-hit",
+  ingressInterfaceId: "s1-eth3",
+  sourceMac: "02:42:0a:00:01:0b",
+  destinationMac: "02:42:0a:00:02:15",
+  vlanId: 10,
+  action: "forward",
+  egressInterfaceIds: ["s1-sfp1"],
+  reason: "unicast-hit",
+};
+
+export const unknownUnicastDecision: MacForwardingDecision = {
+  id: "decision-unknown-unicast",
+  ingressInterfaceId: "s1-eth3",
+  sourceMac: "02:42:0a:00:01:0b",
+  destinationMac: "02:42:0a:00:aa:99",
+  vlanId: 10,
+  action: "flood",
+  egressInterfaceIds: ["s1-eth1", "s1-eth2", "s1-sfp1"],
+  reason: "unknown-unicast",
+};
+
+export const fcsErrorDecision: MacForwardingDecision = {
+  id: "decision-fcs-error",
+  ingressInterfaceId: "s1-eth3",
+  sourceMac: "02:42:0a:00:01:0b",
+  destinationMac: "02:42:0a:00:02:15",
+  vlanId: 10,
+  action: "drop",
+  egressInterfaceIds: [],
+  reason: "fcs-error",
+};
+
+export const macTableEntriesForLookup: MacTableEntry[] = [
+  {
+    id: "mac-h11",
+    mac: "02:42:0a:00:01:0b",
+    portId: "s1-eth3",
+    vlan: "10",
+    learnedFrom: "h11",
+    ageSeconds: 0,
+    state: "learned",
+  },
+  {
+    id: "mac-h21",
+    mac: "02:42:0a:00:02:15",
+    portId: "s1-sfp1",
+    vlan: "10",
+    learnedFrom: "h21",
+    ageSeconds: 18,
+    state: "hit",
+  },
+];
+
+export const vlan10BroadcastDomain: BroadcastDomain = {
+  id: "bd-vlan-10",
+  vlanId: 10,
+  name: "教学 LAN",
+  interfaceIds: ["s1-eth1", "s1-eth2", "s1-eth3", "s1-sfp1"],
+};
+
+export const demoVlanMemberships: VlanMembership[] = [
+  {
+    vlanId: 10,
+    name: "students",
+    accessInterfaceIds: ["s1-eth1", "s1-eth2", "s1-eth3"],
+    trunkInterfaceIds: ["s1-sfp1"],
+  },
+  {
+    vlanId: 20,
+    name: "servers",
+    accessInterfaceIds: ["s1-eth4"],
+    trunkInterfaceIds: ["s1-sfp1"],
+  },
+  {
+    vlanId: 99,
+    name: "native",
+    accessInterfaceIds: [],
+    trunkInterfaceIds: ["s1-sfp1"],
+    nativeInterfaceIds: ["s1-sfp1"],
+  },
+];
+
+export const switchReceiveProcess: LinkLayerProcess = {
+  id: "process-s1-eth3-ipv4",
+  title: "交换机接收以太网帧过程",
+  direction: "receive",
+  actor: "switch",
+  input: {
+    kind: "bit-stream",
+    label: "1010...bit stream",
+    detail: "来自物理层恢复后的比特流，包含 Preamble、SFD 和 MAC 帧字段。",
+  },
+  output: {
+    kind: "forward-decision",
+    label: "s1-sfp1 单播转发",
+    detail: "FCS 通过，FDB 命中，交换机只从目标出接口发送。",
+  },
+  ingressInterfaceId: "s1-eth3",
+  frameId: ipv4UnicastFrame.id,
+  steps: [
+    {
+      id: "recover-bit-stream",
+      layer: "physical",
+      title: "恢复比特流",
+      description: "物理层从电信号中恢复 0/1 比特，并交给上一层。",
+      input: "Cat6 电信号",
+      output: "1010... bit stream",
+      status: "done",
+    },
+    {
+      id: "find-preamble",
+      layer: "data-link",
+      title: "识别前同步码",
+      description: "接收端用 Preamble 完成位同步；该字段不计入 MAC 帧。",
+      input: "56 bit Preamble",
+      output: "同步完成",
+      status: "done",
+    },
+    {
+      id: "find-sfd",
+      layer: "data-link",
+      title: "识别帧开始定界符",
+      description: "SFD 标记后续字段开始进入 MAC 帧内容。",
+      input: "10101011",
+      output: "MAC 帧开始",
+      status: "done",
+    },
+    {
+      id: "assemble-mac-frame",
+      layer: "data-link",
+      title: "组装 MAC 帧",
+      description: "按字段边界读取目的 MAC、源 MAC、类型、数据和 FCS。",
+      output: "Ethernet MAC frame",
+      status: "done",
+    },
+    {
+      id: "strip-preamble-sfd",
+      layer: "data-link",
+      title: "去掉线路定界字段",
+      description: "Preamble 和 SFD 用于同步与定界，不进入 MAC 帧字段和 FCS 计算范围。",
+      output: "MAC frame fields",
+      status: "done",
+    },
+    {
+      id: "read-destination-mac",
+      layer: "data-link",
+      title: "读取目的 MAC",
+      description: "判断该帧是发给本接口、广播/多播，还是需要交换机查表转发。",
+      input: ipv4UnicastFrame.destinationMac,
+      status: "done",
+    },
+    {
+      id: "read-source-mac",
+      layer: "data-link",
+      title: "读取源 MAC",
+      description: "交换机后续会用源 MAC 更新 MAC 地址表。",
+      input: ipv4UnicastFrame.sourceMac,
+      status: "done",
+    },
+    {
+      id: "read-vlan-tag",
+      layer: "data-link",
+      title: "读取 802.1Q 标签",
+      description: "VLAN 标签位于源 MAC 与 Type 字段之间，用于确定该帧所属广播域。",
+      input: `TPID ${ipv4UnicastFrame.vlanTag?.tpid} / VLAN ${ipv4UnicastFrame.vlanTag?.vlanId}`,
+      status: "done",
+    },
+    {
+      id: "read-type-or-length",
+      layer: "data-link",
+      title: "读取 Type/Length",
+      description: "以太网字段指明上层协议类型或数据长度；此处为 IPv4 类型。",
+      input: ipv4UnicastFrame.etherType,
+      status: "done",
+    },
+    {
+      id: "read-payload",
+      layer: "data-link",
+      title: "读取数据字段",
+      description: "数据链路层不解释 IP 负载，只把通过校验的载荷交给上层或继续转发。",
+      input: `${ipv4UnicastFrame.payloadBytes} bytes`,
+      status: "done",
+    },
+    {
+      id: "read-fcs",
+      layer: "data-link",
+      title: "读取 FCS",
+      description: "帧尾 FCS 用于差错检测，不作为上层载荷。",
+      input: ipv4UnicastFrame.fcs,
+      status: "done",
+    },
+    {
+      id: "verify-fcs",
+      layer: "data-link",
+      title: "FCS/CRC 差错检测",
+      description: "对 MAC 帧内容计算 CRC，并与帧尾 FCS 比较。",
+      input: "Dst/Src/Type/Payload + FCS",
+      output: "FCS 通过",
+      status: "done",
+    },
+    {
+      id: "learn-source-mac",
+      layer: "data-link",
+      title: "学习源 MAC",
+      description: "交换机根据源 MAC 和入接口更新 MAC 地址表。",
+      input: `${ipv4UnicastFrame.sourceMac} @ s1-eth3`,
+      output: "FDB 更新",
+      status: "done",
+    },
+    {
+      id: "lookup-destination-mac",
+      layer: "data-link",
+      title: "查目的 MAC",
+      description: "用目的 MAC 和 VLAN 在转发表中查找出接口。",
+      input: `${ipv4UnicastFrame.destinationMac} / VLAN ${ipv4UnicastFrame.vlanTag?.vlanId ?? "-"}`,
+      output: "s1-sfp1",
+      status: "active",
+    },
+    {
+      id: "forward-frame",
+      layer: "data-link",
+      title: "单播转发",
+      description: "查表命中时，只从目标出接口发送，不向其他端口泛洪。",
+      input: "s1-sfp1",
+      status: "pending",
+    },
+  ],
+};
+
+export const fcsFailedReceiveProcess: LinkLayerProcess = {
+  id: "process-s1-eth3-fcs-failed",
+  title: "FCS 错误帧处理过程",
+  direction: "receive",
+  actor: "switch",
+  input: {
+    kind: "bit-stream",
+    label: "1010...bit stream",
+    detail: "物理层交付的比特流中包含一个 FCS 不匹配的 MAC 帧。",
+  },
+  output: {
+    kind: "drop-decision",
+    label: "丢弃错误帧",
+    detail: "链路层不会把错误帧交给上层，也不会进入交换机学习/转发表流程。",
+  },
+  ingressInterfaceId: "s1-eth3",
+  frameId: ipv4UnicastFrame.id,
+  steps: [
+    {
+      id: "recover-bit-stream",
+      layer: "physical",
+      title: "恢复比特流",
+      description: "物理层仍然只负责把信号恢复为比特流。",
+      input: "Cat6 电信号",
+      output: "1010... bit stream",
+      status: "done",
+    },
+    {
+      id: "find-preamble",
+      layer: "data-link",
+      title: "识别前同步码",
+      description: "完成位同步，不参与 FCS 计算。",
+      status: "done",
+    },
+    {
+      id: "find-sfd",
+      layer: "data-link",
+      title: "识别帧开始定界符",
+      description: "定位 MAC 帧开始。",
+      status: "done",
+    },
+    {
+      id: "assemble-mac-frame",
+      layer: "data-link",
+      title: "组装 MAC 帧",
+      description: "读取 MAC 帧字段，准备做差错检测。",
+      status: "done",
+    },
+    {
+      id: "verify-fcs",
+      layer: "data-link",
+      title: "FCS/CRC 差错检测",
+      description: "计算结果与帧尾 FCS 不一致，说明传输中出现差错。",
+      input: "Dst/Src/Type/Payload + FCS",
+      output: "FCS 失败",
+      status: "failed",
+    },
+    {
+      id: "drop-corrupted-frame",
+      layer: "data-link",
+      title: "丢弃错误帧",
+      description: "链路层直接丢弃该帧，不进行 MAC 学习和转发。",
+      output: "frame dropped",
+      status: "active",
+    },
+    {
+      id: "learn-source-mac",
+      layer: "data-link",
+      title: "学习源 MAC",
+      description: "错误帧不进入后续交换处理。",
+      status: "skipped",
+    },
+  ],
+};
+
+export const hostSendProcess: DataLinkProcess = {
+  id: "process-h11-send-ipv4",
+  title: "主机发送以太网帧过程",
+  direction: "send",
+  actor: "host",
+  input: {
+    kind: "upper-payload",
+    label: "IPv4 payload",
+    detail: "网络层交给链路层的数据，链路层负责加上以太网首部和 FCS。",
+  },
+  output: {
+    kind: "bit-stream",
+    label: "Preamble + SFD + MAC frame bits",
+    detail: "链路层输出给物理层的 0/1 比特流。",
+  },
+  ingressInterfaceId: "h11-eth0",
+  frameId: ipv4UnicastFrame.id,
+  steps: [
+    {
+      id: "read-payload",
+      layer: "data-link",
+      title: "接收上层数据",
+      description: "主机链路层从网络层拿到要发送的 IPv4 数据。",
+      input: `${ipv4UnicastFrame.payloadBytes} bytes IPv4`,
+      status: "done",
+    },
+    {
+      id: "read-destination-mac",
+      layer: "data-link",
+      title: "确定目的 MAC",
+      description: "根据 ARP/邻居缓存结果确定下一跳的 MAC 地址。",
+      output: ipv4UnicastFrame.destinationMac,
+      status: "done",
+    },
+    {
+      id: "read-source-mac",
+      layer: "data-link",
+      title: "填入源 MAC",
+      description: "使用发送接口自身的 MAC 地址作为源地址。",
+      output: ipv4UnicastFrame.sourceMac,
+      status: "done",
+    },
+    {
+      id: "read-vlan-tag",
+      layer: "data-link",
+      title: "插入 VLAN 标签",
+      description: "如果接口处于 VLAN 场景，按 802.1Q 在源 MAC 后插入标签。",
+      output: `VLAN ${ipv4UnicastFrame.vlanTag?.vlanId}`,
+      status: "done",
+    },
+    {
+      id: "assemble-mac-frame",
+      layer: "data-link",
+      title: "封装 MAC 帧",
+      description: "生成 Dst/Src/Tag/Type/Payload 字段。",
+      output: "Ethernet MAC frame",
+      status: "done",
+    },
+    {
+      id: "verify-fcs",
+      layer: "data-link",
+      title: "计算并填入 FCS",
+      description: "发送方向计算 CRC/FCS 并写入帧尾。",
+      output: ipv4UnicastFrame.fcs,
+      status: "done",
+    },
+    {
+      id: "find-preamble",
+      layer: "data-link",
+      title: "添加 Preamble",
+      description: "在线路比特流前加入前同步码，帮助接收端同步。",
+      output: "56 bit Preamble",
+      status: "done",
+    },
+    {
+      id: "find-sfd",
+      layer: "data-link",
+      title: "添加 SFD",
+      description: "加入帧开始定界符，标记 MAC 帧字段开始。",
+      output: "10101011",
+      status: "done",
+    },
+    {
+      id: "accept-frame",
+      layer: "data-link",
+      title: "交给物理层",
+      description: "链路层把完整比特流交给物理层编码和发送。",
+      output: "BitStream",
+      status: "active",
+    },
+  ],
+};
+
+export const hostReceiveProcess: DataLinkProcess = {
+  id: "process-h21-receive-ipv4",
+  title: "主机接收以太网帧过程",
+  direction: "receive",
+  actor: "host",
+  input: {
+    kind: "bit-stream",
+    label: "Preamble + SFD + MAC frame bits",
+    detail: "物理层恢复后交给链路层的比特流。",
+  },
+  output: {
+    kind: "upper-payload",
+    label: "IPv4 payload",
+    detail: "目的 MAC 匹配且 FCS 通过后，链路层去掉以太网封装，把载荷交给网络层。",
+  },
+  ingressInterfaceId: "h21-eth0",
+  frameId: ipv4UnicastFrame.id,
+  steps: [
+    {
+      id: "find-preamble",
+      layer: "data-link",
+      title: "识别前同步码",
+      description: "完成位同步。",
+      status: "done",
+    },
+    {
+      id: "find-sfd",
+      layer: "data-link",
+      title: "识别 SFD",
+      description: "定位 MAC 帧开始。",
+      status: "done",
+    },
+    {
+      id: "read-destination-mac",
+      layer: "data-link",
+      title: "检查目的 MAC",
+      description: "主机只接收目的 MAC 为自己、广播或相关多播的帧。",
+      input: ipv4UnicastFrame.destinationMac,
+      output: "匹配本机",
+      status: "done",
+    },
+    {
+      id: "verify-fcs",
+      layer: "data-link",
+      title: "FCS/CRC 差错检测",
+      description: "校验通过后才能交给上层。",
+      output: "FCS 通过",
+      status: "done",
+    },
+    {
+      id: "read-type-or-length",
+      layer: "data-link",
+      title: "识别上层协议",
+      description: "根据 Type 字段决定交给 IPv4、ARP 或 IPv6 等处理。",
+      input: ipv4UnicastFrame.etherType,
+      status: "done",
+    },
+    {
+      id: "accept-frame",
+      layer: "data-link",
+      title: "交付网络层",
+      description: "去掉链路层首尾字段，把 payload 交给网络层。",
+      output: "IPv4 payload",
+      status: "active",
+    },
+  ],
+};
