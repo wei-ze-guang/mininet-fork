@@ -47,29 +47,106 @@ const stages = [
   },
 ];
 
-const nestedSteps = ["入口", "处理器 A", "处理器 B", "出口"];
-const nestedActionIds = ["entry", "processor-a", "processor-b", "exit"];
-const secondActionIds = ["child-entry", "micro-op", "child-output"];
+const nestedSteps = ["收到比特流", "数据链路层", "转发帧"];
+const nestedActionIds = ["incoming-bits", "link-layer", "forward-frame"];
+const secondActionIds = ["link-input-step", "ethernet-frame", "crc-check", "mac-lookup", "link-output-step"];
 
 const actionTree = {
   id: "root",
   label: "当前动作容器",
+  role: "component",
+  kind: "action-container",
   children: [
-    { id: "entry", label: "入口", commit: appendCommit("入口完成") },
-    { id: "processor-a", label: "处理器 A", commit: appendCommit("处理器 A 完成") },
     {
-      id: "processor-b",
-      label: "处理器 B",
-      commit: appendCommit("处理器 B 完成"),
+      id: "incoming-bits",
+      label: "收到比特流",
+      role: "data",
+      layer: "physical",
+      kind: "bit-stream",
+      summary: "10110010",
+      commit: appendCommit("收到比特流"),
       children: [
-        { id: "child-entry", label: "子入口", commit: appendCommit("子入口完成") },
-        { id: "micro-op", label: "微操作", commit: appendCommit("微操作完成") },
-        { id: "child-output", label: "子输出", commit: appendCommit("子输出完成") },
+        { id: "bit-field-a", label: "1011", role: "field", layer: "physical", kind: "bits" },
+        { id: "bit-field-b", label: "0010", role: "field", layer: "physical", kind: "bits" },
       ],
     },
-    { id: "exit", label: "出口", commit: appendCommit("出口完成") },
+    {
+      id: "link-layer",
+      label: "数据链路层",
+      role: "component",
+      layer: "link",
+      kind: "layer",
+      summary: "把比特流识别为以太网帧",
+      input: {
+        id: "link-layer-input",
+        label: "输入：比特流",
+        role: "input",
+        layer: "link",
+        kind: "interface",
+        summary: "来自物理层的 0/1 比特流",
+        children: [
+          { id: "link-input-bits", label: "10110010", role: "data", layer: "physical", kind: "bit-stream" },
+        ],
+      },
+      output: {
+        id: "link-layer-output",
+        label: "输出：以太网帧",
+        role: "output",
+        layer: "link",
+        kind: "interface",
+        summary: "准备交给下一跳或上一层的数据帧",
+        children: [
+          { id: "forwarded-ethernet-frame", label: "转发后的帧", role: "data", layer: "link", kind: "ethernet-frame" },
+        ],
+      },
+      commit: appendCommit("链路层处理完成"),
+      children: [
+        {
+          id: "link-input-step",
+          label: "接收输入",
+          role: "input",
+          layer: "link",
+          kind: "input-step",
+          summary: "链路层从物理层接收比特流",
+          commit: appendCommit("链路层接收输入"),
+          children: [
+            { id: "link-input-step-bits", label: "10110010", role: "data", layer: "physical", kind: "bit-stream" },
+          ],
+        },
+        {
+          id: "ethernet-frame",
+          label: "以太网帧",
+          role: "data",
+          layer: "link",
+          kind: "ethernet-frame",
+          summary: "帧头 + 载荷 + FCS",
+          commit: appendCommit("识别以太网帧"),
+          children: [
+            { id: "dst-mac", label: "目的 MAC", role: "field", layer: "link", kind: "mac-address" },
+            { id: "src-mac", label: "源 MAC", role: "field", layer: "link", kind: "mac-address" },
+            { id: "payload", label: "Payload", role: "field", layer: "link", kind: "payload" },
+            { id: "fcs", label: "FCS", role: "field", layer: "link", kind: "checksum" },
+          ],
+        },
+        { id: "crc-check", label: "CRC 校验", role: "operation", layer: "link", kind: "crc-check", commit: appendCommit("CRC 校验通过") },
+        { id: "mac-lookup", label: "MAC 表查找", role: "operation", layer: "link", kind: "table-lookup", commit: appendCommit("MAC 表命中") },
+        {
+          id: "link-output-step",
+          label: "输出结果",
+          role: "output",
+          layer: "link",
+          kind: "output-step",
+          summary: "链路层输出准备转发的以太网帧",
+          commit: appendCommit("链路层输出结果"),
+          children: [
+            { id: "link-output-step-frame", label: "转发后的帧", role: "data", layer: "link", kind: "ethernet-frame" },
+          ],
+        },
+      ],
+    },
+    { id: "forward-frame", label: "转发帧", role: "effect", layer: "link", kind: "forward", commit: appendCommit("帧已转发") },
   ],
-};
+} satisfies ActionTreeNode<DemoData>;
 
 const initialDemoData = { committed: [] } satisfies DemoData;
 
@@ -106,7 +183,7 @@ export function ScopedActionDemo() {
     pauseMs: 760,
   });
   const rootExpanded = runner.isExpanded("root");
-  const secondExpanded = runner.isExpanded("processor-b");
+  const secondExpanded = runner.isExpanded("link-layer");
 
   return (
     <section className={`nest-stage ${rootExpanded ? "is-root-expanded" : ""} ${secondExpanded ? "is-second-expanded" : ""}`}>
@@ -182,12 +259,13 @@ function AutoLayoutCanvas({ root, runner }: { root: ActionTreeNode; runner: Runn
   const layout = layoutActionTree(root);
   const nodeById = new Map(layout.map((node) => [node.id, node]));
   const activeNode = runner.activeActionId ? nodeById.get(runner.activeActionId) : undefined;
+  const activeAction = runner.activeActionId ? runner.getNode(runner.activeActionId) : undefined;
 
   return (
     <div className="auto-canvas">
       <div className="canvas-head">
         <span>全局动作画布</span>
-        <strong>{activeNode?.label ?? "等待进入"}</strong>
+        <strong>{activeAction?.role ? `${activeAction.role} / ${activeNode?.label ?? ""}` : activeNode?.label ?? "等待进入"}</strong>
       </div>
       <svg className="canvas-edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         {layout.flatMap((node) => {
@@ -213,10 +291,11 @@ function AutoLayoutCanvas({ root, runner }: { root: ActionTreeNode; runner: Runn
         const active = runner.activeActionId === node.id;
         const inPath = runner.activePath.includes(node.id);
         const done = runner.isDone(node.id);
+        const actionNode = runner.getNode(node.id);
 
         return (
           <div
-            className={`canvas-node depth-${node.depth} state-${status} ${active ? "is-active" : ""} ${inPath ? "is-path" : ""} ${done ? "is-done" : ""}`}
+            className={`canvas-node depth-${node.depth} role-${actionNode?.role ?? "component"} state-${status} ${active ? "is-active" : ""} ${inPath ? "is-path" : ""} ${done ? "is-done" : ""}`}
             key={node.id}
             style={{ left: `${node.x}%`, top: `${node.y}%` }}
           >
@@ -254,6 +333,7 @@ function StageNode({
 function CenterActionMachine({ runner }: { runner: Runner }) {
   const rootStatus = runner.getStatus("root");
   const data = isDemoData(runner.data) ? runner.data : { committed: [] };
+  const activeNode = runner.activeActionId ? runner.getNode(runner.activeActionId) : undefined;
 
   return (
     <div className={`center-machine status-${rootStatus}`}>
@@ -289,10 +369,12 @@ function CenterActionMachine({ runner }: { runner: Runner }) {
             ))}
           </div>
 
+          <FocusNodeInspector node={activeNode} runner={runner} />
+
           <div className="io-panel">
             <div className="io-row">
               <span>动作输入</span>
-              <span className="io-code input">{runner.activeActionId ?? "object.in"}</span>
+              <span className="io-code input">{activeNode?.summary ?? runner.activeActionId ?? "object.in"}</span>
             </div>
             <div className="progress-track">
               <div className="progress-fill" />
@@ -309,8 +391,55 @@ function CenterActionMachine({ runner }: { runner: Runner }) {
   );
 }
 
+function FocusNodeInspector({ node, runner }: { node: ActionTreeNode | undefined; runner: Runner }) {
+  if (!node) {
+    return null;
+  }
+
+  const children = node.children ?? [];
+  const interfaces = [node.input, node.output].filter((interfaceNode): interfaceNode is ActionTreeNode => Boolean(interfaceNode));
+
+  return (
+    <div className={`focus-inspector role-${node.role ?? "component"}`}>
+      <div className="focus-inspector-head">
+        <div>
+          <span>{node.role ?? "component"}</span>
+          {node.layer ? <span>{node.layer}</span> : null}
+          {node.kind ? <span>{node.kind}</span> : null}
+        </div>
+        <strong>{node.label}</strong>
+      </div>
+      <div className="focus-inspector-summary">{node.summary ?? "当前节点没有专门数据展示器，使用默认节点结构展示。"}</div>
+      {interfaces.length ? (
+        <div className="focus-interfaces">
+          {interfaces.map((interfaceNode) => (
+            <div className={`focus-interface role-${interfaceNode.role ?? "component"}`} key={interfaceNode.id}>
+              <div>
+                <span>{interfaceNode.role ?? "interface"}</span>
+                <strong>{interfaceNode.label}</strong>
+              </div>
+              <small>{interfaceNode.summary ?? interfaceNode.kind ?? "ActionNode interface"}</small>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {children.length ? (
+        <div className="focus-children">
+          {children.map((child) => (
+            <div className={`focus-child role-${child.role ?? "component"} state-${runner.getStatus(child.id)}`} key={child.id}>
+              <span className="focus-child-dot" />
+              <strong>{child.label}</strong>
+              <small>{child.role ?? "component"}</small>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function SecondLevelMachine({ runner }: { runner: Runner }) {
-  const expanded = runner.isExpanded("processor-b");
+  const expanded = runner.isExpanded("link-layer");
 
   return (
     <div className={`second-machine ${expanded ? "is-expanded" : ""}`}>
@@ -318,22 +447,26 @@ function SecondLevelMachine({ runner }: { runner: Runner }) {
       <div className="second-card">
         <div className="second-head">
           <div>
-            <div className="second-title">二级动作：处理器 B 内部</div>
-            <div className="second-subtitle">进入更深一层，完成后回退上一层</div>
+            <div className="second-title">二级动作：数据链路层内部</div>
+            <div className="second-subtitle">组件自己展示数据结构，字段和操作也是节点</div>
           </div>
           <div className="second-head-tools">
-            <ScopeControls runner={runner} scopeId="processor-b" label="处理器 B" />
+            <ScopeControls runner={runner} scopeId="link-layer" label="链路层" />
             <CornerUpLeft className="second-return-icon" />
           </div>
         </div>
         <div className="second-body">
-          {["子入口", "微操作", "子输出"].map((step, index) => (
-            <div className={moduleClassName("second-step", runner.getStatus(secondActionIds[index]))} key={step}>
-              <Check className="second-done-mark" />
-              <span>{index + 1}</span>
-              {step}
-            </div>
-          ))}
+          {["接收输入", "以太网帧", "CRC 校验", "MAC 查表", "输出结果"].map((step, index) => {
+            const node = runner.getNode(secondActionIds[index]);
+            return (
+              <div className={moduleClassName("second-step", runner.getStatus(secondActionIds[index]))} key={step}>
+                <Check className="second-done-mark" />
+                <span>{index + 1}</span>
+                <strong>{step}</strong>
+                <small>{node?.role ?? "action"}</small>
+              </div>
+            );
+          })}
         </div>
         <div className="return-path">
           <div className="return-dot" />
@@ -674,6 +807,31 @@ const styles = `
     color: rgb(187,247,208);
   }
 
+  .canvas-node.role-data {
+    border-style: dashed;
+  }
+
+  .canvas-node.role-input {
+    border-color: rgba(96,165,250,0.42);
+  }
+
+  .canvas-node.role-output {
+    border-color: rgba(52,211,153,0.44);
+  }
+
+  .canvas-node.role-field {
+    border-radius: 999px;
+    padding-inline: 10px;
+  }
+
+  .canvas-node.role-operation {
+    border-color: rgba(251,191,36,0.40);
+  }
+
+  .canvas-node.role-effect {
+    border-color: rgba(52,211,153,0.44);
+  }
+
   .canvas-node-dot {
     width: 7px;
     height: 7px;
@@ -691,6 +849,26 @@ const styles = `
   .canvas-node.is-done:not(.is-active) .canvas-node-dot {
     background: rgb(34,197,94);
     box-shadow: 0 0 10px rgba(34,197,94,0.6);
+  }
+
+  .canvas-node.role-data .canvas-node-dot {
+    background: rgb(96,165,250);
+  }
+
+  .canvas-node.role-input .canvas-node-dot {
+    background: rgb(96,165,250);
+  }
+
+  .canvas-node.role-output .canvas-node-dot {
+    background: rgb(52,211,153);
+  }
+
+  .canvas-node.role-field .canvas-node-dot {
+    background: rgb(168,85,247);
+  }
+
+  .canvas-node.role-operation .canvas-node-dot {
+    background: rgb(251,191,36);
   }
 
   .canvas-node-label {
@@ -1061,7 +1239,7 @@ const styles = `
 
   .second-body {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 10px;
     padding: 16px;
   }
@@ -1069,7 +1247,7 @@ const styles = `
   .second-step {
     position: relative;
     display: grid;
-    min-height: 74px;
+    min-height: 82px;
     place-items: center;
     gap: 6px;
     border: 1px solid rgba(100,116,139,0.72);
@@ -1126,6 +1304,18 @@ const styles = `
     color: rgb(254,243,199);
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 11px;
+  }
+
+  .second-step strong {
+    color: rgb(248,250,252);
+    font-size: 11px;
+  }
+
+  .second-step small {
+    color: rgb(148,163,184);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 9px;
+    text-transform: uppercase;
   }
 
   .return-path {
@@ -1226,6 +1416,212 @@ const styles = `
     border-radius: 8px;
     background: rgba(2,6,23,0.7);
     padding: 12px;
+  }
+
+  .focus-inspector {
+    margin-top: 16px;
+    border: 1px solid rgba(71,85,105,0.48);
+    border-radius: 8px;
+    background: rgba(2,6,23,0.62);
+    padding: 12px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+
+  .focus-inspector.role-data {
+    border-style: dashed;
+    border-color: rgba(96,165,250,0.46);
+    background: rgba(30,64,175,0.14);
+  }
+
+  .focus-inspector.role-field {
+    border-color: rgba(168,85,247,0.42);
+    background: rgba(88,28,135,0.14);
+  }
+
+  .focus-inspector.role-operation {
+    border-color: rgba(251,191,36,0.40);
+    background: rgba(120,53,15,0.14);
+  }
+
+  .focus-inspector.role-effect {
+    border-color: rgba(52,211,153,0.42);
+    background: rgba(6,78,59,0.14);
+  }
+
+  .focus-inspector-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .focus-inspector-head div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .focus-inspector-head span {
+    border: 1px solid rgba(148,163,184,0.22);
+    border-radius: 999px;
+    background: rgba(15,23,42,0.72);
+    color: rgb(148,163,184);
+    padding: 4px 7px;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .focus-inspector-head strong {
+    overflow: hidden;
+    color: rgb(248,250,252);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .focus-inspector-summary {
+    margin-top: 8px;
+    color: rgb(203,213,225);
+    font-size: 11px;
+    line-height: 1.55;
+  }
+
+  .focus-interfaces {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .focus-interface {
+    border: 1px solid rgba(100,116,139,0.42);
+    border-radius: 8px;
+    background: rgba(15,23,42,0.62);
+    padding: 9px;
+  }
+
+  .focus-interface.role-input {
+    border-color: rgba(96,165,250,0.44);
+    background: rgba(30,64,175,0.16);
+  }
+
+  .focus-interface.role-output {
+    border-color: rgba(52,211,153,0.44);
+    background: rgba(6,78,59,0.16);
+  }
+
+  .focus-interface div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .focus-interface span {
+    border-radius: 999px;
+    background: rgba(2,6,23,0.56);
+    color: rgb(165,243,252);
+    padding: 3px 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 9px;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .focus-interface strong {
+    overflow: hidden;
+    color: rgb(248,250,252);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .focus-interface small {
+    display: block;
+    margin-top: 7px;
+    color: rgb(148,163,184);
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .focus-children {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .focus-child {
+    position: relative;
+    display: grid;
+    min-height: 54px;
+    align-content: center;
+    gap: 5px;
+    border: 1px solid rgba(100,116,139,0.46);
+    border-radius: 8px;
+    background: rgba(15,23,42,0.66);
+    padding: 8px 8px 8px 22px;
+  }
+
+  .focus-child.state-entering,
+  .focus-child.state-running,
+  .focus-child.state-expanded,
+  .focus-child.state-waiting-child {
+    border-color: rgba(103,232,249,0.74);
+    box-shadow: 0 0 18px rgba(34,211,238,0.16);
+  }
+
+  .focus-child.state-done,
+  .focus-child.state-exited {
+    border-color: rgba(34,197,94,0.48);
+    background: rgba(20,83,45,0.24);
+  }
+
+  .focus-child-dot {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: rgb(100,116,139);
+    transform: translateY(-50%);
+  }
+
+  .focus-child.role-data .focus-child-dot {
+    background: rgb(96,165,250);
+  }
+
+  .focus-child.role-input .focus-child-dot {
+    background: rgb(96,165,250);
+  }
+
+  .focus-child.role-output .focus-child-dot {
+    background: rgb(52,211,153);
+  }
+
+  .focus-child.role-field .focus-child-dot {
+    background: rgb(168,85,247);
+  }
+
+  .focus-child.role-operation .focus-child-dot {
+    background: rgb(251,191,36);
+  }
+
+  .focus-child strong {
+    overflow: hidden;
+    color: rgb(248,250,252);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .focus-child small {
+    color: rgb(148,163,184);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 9px;
+    text-transform: uppercase;
   }
 
   .io-row {

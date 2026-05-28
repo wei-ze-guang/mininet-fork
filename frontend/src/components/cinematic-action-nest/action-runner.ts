@@ -14,9 +14,19 @@ export type ActionLifecycleEventType =
   | "collapse"
   | "exit";
 
+export type ActionNodeRole = "component" | "input" | "output" | "data" | "field" | "operation" | "decision" | "effect";
+export type ActionNodeLayer = "physical" | "link" | "network" | "transport" | "application";
+
 export type ActionNode<TData = unknown> = {
   id: string;
+  input?: ActionNode<TData>;
+  kind?: string;
+  layer?: ActionNodeLayer;
   label: string;
+  meta?: Record<string, unknown>;
+  output?: ActionNode<TData>;
+  role?: ActionNodeRole;
+  summary?: string;
   children?: ActionNode<TData>[];
   commit?: (data: TData) => TData;
 };
@@ -48,6 +58,7 @@ export type ActionRunnerSnapshot = {
   eventLog: ActionLifecycleEvent[];
   frameCount: number;
   frameIndex: number;
+  getNode: (actionId: string) => ActionNode | undefined;
   getStatus: (actionId: string) => ActionStatus;
   isExpanded: (actionId: string) => boolean;
   isDone: (actionId: string) => boolean;
@@ -103,6 +114,7 @@ export function useActionRunner({
     () => timeline.slice(Math.max(0, frameIndex - 5), frameIndex + 1).map((frame) => frame.event),
     [frameIndex, timeline],
   );
+  const nodesById = useMemo(() => collectNodesById(root), [root]);
 
   useEffect(() => {
     const frame = timeline[frameIndex];
@@ -164,6 +176,7 @@ export function useActionRunner({
     (actionId: string) => frame.statusById.get(actionId) ?? "pending",
     [frame.statusById],
   );
+  const getNode = useCallback((actionId: string) => nodesById.get(actionId), [nodesById]);
 
   const isExpanded = useCallback(
     (actionId: string) => frame.expandedActionIds.has(actionId),
@@ -281,6 +294,7 @@ export function useActionRunner({
     frameIndex,
     statusById: frame.statusById,
     eventLog,
+    getNode,
     getStatus,
     isExpanded,
     isDone,
@@ -389,6 +403,25 @@ export function buildActionTimeline(
 function findPreviousMilestoneIndex(frameIndex: number, milestoneFrames: number[]) {
   const previous = milestoneFrames.findLastIndex((candidate) => candidate <= frameIndex);
   return Math.max(previous, 0);
+}
+
+function collectNodesById(root: ActionNode) {
+  const nodesById = new Map<string, ActionNode>();
+  visit(root);
+  return nodesById;
+
+  function visit(node: ActionNode) {
+    nodesById.set(node.id, node);
+    if (node.input) {
+      visit(node.input);
+    }
+    if (node.output) {
+      visit(node.output);
+    }
+    for (const child of node.children ?? []) {
+      visit(child);
+    }
+  }
 }
 
 function isFrameInScope(frame: TimelineFrame, scopeId: string, rootId: string) {
